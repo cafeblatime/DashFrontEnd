@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Manager Live Dashboard - Demo Mode</title>
+  <title>Manager Live Dashboard - Connected Mode</title>
   <style>
     :root {
       --bg-color: #1800ad;
@@ -226,7 +226,7 @@
   <!-- BOUNDARY BOX CONTAINER WITH WHITER FRAME -->
   <div class="dashboard-container">
     <h1>Counter Dashboard</h1>
-    <div id="tableGrid" class="grid">Loading demo data...</div>
+    <div id="tableGrid" class="grid">Connecting to Google Sheets...</div>
   </div>
 
   <!-- DETAILS MODAL -->
@@ -252,10 +252,13 @@
     // CONFIGURATION AREA
     // ==========================================
     const MANAGER_PIN = "0070"; 
+    // TODO: Paste your deployed Google Apps Script Web App URL below
+    const APPS_SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE"; 
     // ==========================================
 
     let activeData = {};
     let currentSelectedTable = null;
+    let pollInterval = null;
 
     window.addEventListener('DOMContentLoaded', () => {
       const pinInput = document.getElementById('pinInput');
@@ -271,23 +274,73 @@
 
       if (enteredPin === MANAGER_PIN) {
         document.getElementById('pinOverlay').style.display = 'none';
-        loadDemoData(); 
-        setInterval(updateDemoTimers, 1000);
+        fetchDashboardData(); 
+        pollInterval = setInterval(fetchDashboardData, 10000); // Poll sheet every 10 seconds
       } else {
         errorEl.style.display = 'block';
         document.getElementById('pinInput').value = '';
       }
     }
 
-    function loadDemoData() {
-      activeData = {
-        "1": { table: 1, status: "Active", secondsLeft: 1250, orders: ["1x Espresso", "1x Croissant", "Focus Pass (45 minutes)"], totalSum: 14.50, intervalCount: 1, isPaid: false },
-        "2": { table: 2, status: "Open", secondsLeft: 0, orders: [], totalSum: 0.00, intervalCount: 0, isPaid: false },
-        "3": { table: 3, status: "Expiring", secondsLeft: 180, orders: ["2x Cappuccino", "1x Cheesecake", "Focus Pass (45 minutes)"], totalSum: 26.00, intervalCount: 1, isPaid: true },
-        "4": { table: 4, status: "Expired", secondsLeft: 0, orders: ["1x Latte", "Focus Pass (45 minutes)"], totalSum: 10.50, intervalCount: 1, isPaid: false },
-        "5": { table: 5, status: "Active", secondsLeft: 2400, orders: ["1x Mocha", "Focus Pass (45 minutes)"], totalSum: 12.00, intervalCount: 1, isPaid: false }
-      };
-      renderGrid();
+    async function fetchDashboardData() {
+      if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("YOUR_GOOGLE_APPS_SCRIPT")) {
+        document.getElementById('tableGrid').innerHTML = '<div style="grid-column: span 2; text-align: center; color: #D32F2F; font-size: 0.85rem; padding: 10px;">Error: Please insert your Apps Script Web App URL in the code configuration area.</div>';
+        return;
+      }
+
+      try {
+        const response = await fetch(`${APPS_SCRIPT_URL}?action=manager`);
+        const result = await response.json();
+        
+        if (result.status === "success" && result.tables) {
+          // Keep track of local payment states if already toggled locally
+          Object.keys(result.tables).forEach(tNum => {
+            if (activeData[tNum] && activeData[tNum].isPaid !== undefined) {
+              result.tables[tNum].isPaid = activeData[tNum].isPaid;
+            } else {
+              result.tables[tNum].isPaid = false; // default un-paid
+            }
+            
+            // Calculate secondsLeft client-side based on returned endTime string
+            result.tables[tNum].secondsLeft = parseEndTimeToSeconds(result.tables[tNum].endTime);
+          });
+
+          activeData = result.tables;
+          renderGrid();
+          
+          // If modal is open, refresh modal info too
+          if (currentSelectedTable && activeData[currentSelectedTable]) {
+            updateModalContent(currentSelectedTable);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch live data from Google Sheets:", err);
+      }
+    }
+
+    function parseEndTimeToSeconds(rawEnd) {
+      if (!rawEnd) return 0;
+      const now = new Date();
+      
+      const timeStr = String(rawEnd).trim();
+      const timeParts = timeStr.match(/(\d+):(\d+)(?::(\d+))?\s*(AM|PM)?/i);
+      if (!timeParts) return 0;
+
+      let hours = parseInt(timeParts[1], 10);
+      let minutes = parseInt(timeParts[2], 10);
+      let seconds = timeParts[3] ? parseInt(timeParts[3], 10) : 0;
+      let ampm = timeParts[4];
+
+      if (ampm) {
+        if (ampm.toUpperCase() === "PM" && hours < 12) hours += 12;
+        if (ampm.toUpperCase() === "AM" && hours === 12) hours = 0;
+      }
+
+      const endDate = new Date(now);
+      endDate.setHours(hours, minutes, seconds, 0);
+
+      const diffMs = endDate.getTime() - now.getTime();
+      return Math.max(0, Math.floor(diffMs / 1000));
     }
 
     function renderGrid() {
@@ -340,7 +393,8 @@
       });
     }
 
-    function updateDemoTimers() {
+    // Client-side smooth countdown ticker every second
+    setInterval(() => {
       Object.keys(activeData).forEach(tNum => {
         const t = activeData[tNum];
         if (t.status.toLowerCase() === 'active' || t.status.toLowerCase() === 'expiring') {
@@ -352,13 +406,25 @@
           } else {
             t.status = 'Expired';
           }
+          
+          // Update card DOM elements directly for smooth UI without full re-render
+          const timerEl = document.getElementById(`timer-${tNum}`);
+          if (timerEl) {
+            const mins = Math.floor(t.secondsLeft / 60);
+            const secs = t.secondsLeft % 60;
+            timerEl.innerText = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+          }
         }
       });
-      renderGrid();
-    }
+    }, 1000);
 
     function openModal(tNum) {
       currentSelectedTable = tNum;
+      updateModalContent(tNum);
+      document.getElementById('detailsModal').style.display = 'flex';
+    }
+
+    function updateModalContent(tNum) {
       const t = activeData[tNum];
       if (!t) return;
 
@@ -367,7 +433,7 @@
       const ordersList = document.getElementById('modalOrders');
       ordersList.innerHTML = t.orders.length > 0 
         ? t.orders.map(item => `<li>${item}</li>`).join('')
-        : '<li>No items recorded (Table is Open)</li>';
+        : '<li>No items recorded</li>';
 
       document.getElementById('modalTotal').innerText = t.totalSum.toFixed(2);
 
@@ -384,7 +450,6 @@
       }
 
       updateModalPaidBtn();
-      document.getElementById('detailsModal').style.display = 'flex';
     }
 
     function updateModalPaidBtn() {
@@ -408,12 +473,22 @@
       }
     }
 
-    function togglePaymentStatus() {
+    async function togglePaymentStatus() {
       if (!currentSelectedTable || !activeData[currentSelectedTable]) return;
 
-      activeData[currentSelectedTable].isPaid = !activeData[currentSelectedTable].isPaid;
+      const t = activeData[currentSelectedTable];
+      t.isPaid = !t.isPaid;
       updateModalPaidBtn();
       renderGrid();
+
+      // Send clear/update call to Google Apps Script backend if needed
+      if (APPS_SCRIPT_URL && !APPS_SCRIPT_URL.includes("YOUR_GOOGLE_APPS_SCRIPT")) {
+        try {
+          await fetch(`${APPS_SCRIPT_URL}?table=${currentSelectedTable}&action=clear`);
+        } catch (err) {
+          console.error("Failed to sync payment status with sheet:", err);
+        }
+      }
     }
 
     function closeModal() {
