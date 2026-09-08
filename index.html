@@ -277,7 +277,7 @@
     let pollInterval = null;
     let audioCtx = null;
     let alertVolume = 0.35; 
-    const CASHIER_BUFFER_SECS = 120; // 2 minutes silent background buffer
+    const CASHIER_BUFFER_SECS = 0; // Buffer is handled directly in Excel (47 minutes)
 
     function updateVolume(val) {
       document.getElementById('volVal').innerText = val;
@@ -358,10 +358,8 @@
               result.tables[tNum].isPaid = false; 
             }
             
-            // Calculate base seconds remaining from API
-            let baseSeconds = parseEndTimeToSeconds(result.tables[tNum].endTime);
-            // Apply the 2-minute buffer so secondsLeft stays alive into the buffer zone
-            result.tables[tNum].secondsLeft = baseSeconds + CASHIER_BUFFER_SECS;
+            // Resync directly with Livedash Excel time calculation
+            result.tables[tNum].secondsLeft = parseEndTimeToSeconds(result.tables[tNum].endTime);
 
             const oldStatus = activeData[tNum] ? activeData[tNum].status.toLowerCase() : 'open';
             const newStatus = result.tables[tNum].status.toLowerCase();
@@ -424,7 +422,6 @@
         const t = activeData[tNum];
         let statusLower = t.status.toLowerCase();
 
-        // Background 2-minute buffer logic mapped to states
         if (statusLower !== 'open') {
           if (t.secondsLeft <= 0) {
             statusLower = 'expired';
@@ -553,7 +550,7 @@
         btn.innerText = "Mark as Paid";
         btn.className = "btn-action btn-pay";
       }
-    }
+     }
 
     function togglePaymentStatus() {
       if (!currentSelectedTable || !activeData[currentSelectedTable]) return;
