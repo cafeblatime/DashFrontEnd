@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manager Live Dashboard</title>
+  <style>
+    :root {
+      --bg-color: #0F172A;
+      --card-open: #1E293B;
+      --card-busy: #1800AD;
+      --accent-green: #22C55E;
+      --accent-red: #EF4444;
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg-color);
+      color: var(--text-main);
+      padding: 16px;
+      margin: 0;
+    }
+
+    h1 { font-size: 1.5rem; text-align: center; margin-bottom: 20px; color: #60A5FA; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 14px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .table-card {
+      background: var(--card-open);
+      border-radius: 14px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform 0.1s ease;
+    }
+
+    .table-card:active { transform: scale(0.96); }
+
+    .table-card.active {
+      background: var(--card-busy);
+      border-color: #3B82F6;
+    }
+
+    .table-num { font-size: 1.4rem; font-weight: 800; }
+    .status-badge { font-size: 0.8rem; text-transform: uppercase; margin-top: 6px; font-weight: 600; }
+    .end-time { font-size: 0.9rem; margin-top: 8px; color: #FACC15; font-weight: bold; }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      align-items: center; justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-content {
+      background: #1E293B;
+      padding: 24px;
+      border-radius: 16px;
+      max-width: 360px;
+      width: 100%;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+
+    .close-btn {
+      background: #334155;
+      color: #FFF;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      width: 100%;
+      margin-top: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .verify-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      margin-top: 8px;
+    }
+    .verified { background: var(--accent-green); color: #000; }
+    .unverified { background: var(--accent-red); color: #FFF; }
+  </style>
+</head>
+<body>
+
+  <h1>📱 Counter Dashboard</h1>
+  <div id="tableGrid" class="grid">Loading tables...</div>
+
+  <!-- DETAILS MODAL -->
+  <div id="detailsModal" class="modal">
+    <div class="modal-content">
+      <h2 id="modalTitle">Table X</h2>
+      <hr style="border-color: #334155;">
+      
+      <p><strong>Order Summary:</strong></p>
+      <ul id="modalOrders" style="padding-left: 20px; color: var(--text-muted);"></ul>
+
+      <p><strong>Total Sum:</strong> $<span id="modalTotal">0.00</span></p>
+      
+      <p><strong>Focus Time Verification:</strong></p>
+      <div id="modalVerify" class="verify-badge">Checking...</div>
+
+      <button class="close-btn" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby2MY_qM4p18RYNwn0a8DX_FGQMdMNyJ4q6b8TnZSnVscOGiUIIPjh0xRaZFvZleMh0Mw/exec";
+    let activeData = {};
+
+    async function fetchDashboardData() {
+      try {
+        const res = await fetch(`${SCRIPT_URL}?action=manager`);
+        const json = await res.json();
+        
+        if (json.status === "success") {
+          activeData = json.tables;
+          renderGrid();
+        }
+      } catch (err) {
+        console.error("Failed to load dashboard:", err);
+      }
+    }
+
+    function renderGrid() {
+      const grid = document.getElementById('tableGrid');
+      grid.innerHTML = '';
+
+      Object.keys(activeData).forEach(tNum => {
+        const t = activeData[tNum];
+        const isActive = (t.status === "Occupied" || t.status === "Busy");
+
+        const card = document.createElement('div');
+        card.className = `table-card ${isActive ? 'active' : ''}`;
+        card.onclick = () => openModal(tNum);
+
+        card.innerHTML = `
+          <div class="table-num">Table ${t.table}</div>
+          <div class="status-badge" style="color: ${isActive ? '#60A5FA' : 'var(--text-muted)'}">${t.status}</div>
+          ${isActive && t.endTime ? `<div class="end-time">Ends: ${t.endTime}</div>` : ''}
+        `;
+
+        grid.appendChild(card);
+      });
+    }
+
+    function openModal(tNum) {
+      const t = activeData[tNum];
+      if (!t) return;
+
+      document.getElementById('modalTitle').innerText = `Table ${t.table} Details`;
+      
+      const ordersList = document.getElementById('modalOrders');
+      ordersList.innerHTML = t.orders.length > 0 
+        ? t.orders.map(item => `<li>${item}</li>`).join('')
+        : '<li>No items recorded</li>';
+
+      document.getElementById('modalTotal').innerText = t.totalSum.toFixed(2);
+
+      const verifyEl = document.getElementById('modalVerify');
+      if (t.intervalCount) {
+        verifyEl.innerText = "✓ VERIFIED (Interval Active)";
+        verifyEl.className = "verify-badge verified";
+      } else {
+        verifyEl.innerText = "✕ NOT VERIFIED";
+        verifyEl.className = "verify-badge unverified";
+      }
+
+      document.getElementById('detailsModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('detailsModal').style.display = 'none';
+    }
+
+    // Auto-refresh every 10 seconds
+    fetchDashboardData();
+    setInterval(fetchDashboardData, 10000);
+  </script>
+</body>
+</html>
