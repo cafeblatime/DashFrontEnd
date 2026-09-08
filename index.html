@@ -25,33 +25,46 @@
       margin: 0;
     }
 
-    /* Dashboard Container Box */
+    /* Dashboard Container Box (Whiter background frame) */
     .dashboard-container {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: #FAF9F6;
+      border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 20px;
-      padding: 24px 20px;
-      max-width: 940px;
+      padding: 24px 16px;
+      max-width: 420px;
       margin: 0 auto;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     }
 
-    h1 { font-size: 1.5rem; text-align: center; margin-top: 0; margin-bottom: 20px; color: #FAF9F6; letter-spacing: 0.5px; text-transform: uppercase; }
+    /* Header styling with dark royal blue */
+    h1 { 
+      font-size: 1.25rem; 
+      text-align: center; 
+      margin-top: 0; 
+      margin-bottom: 20px; 
+      background: #1800ad;
+      color: #FAF9F6; 
+      padding: 12px;
+      border-radius: 12px;
+      letter-spacing: 0.5px; 
+      text-transform: uppercase; 
+    }
 
+    /* Grid configuration to fit 2 smaller tables side by side */
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 14px;
-      max-width: 900px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      max-width: 380px;
       margin: 0 auto;
     }
 
     .table-card {
-      background: var(--card-open);
-      border-radius: 14px;
-      padding: 18px 16px;
+      background: #FFFFFF;
+      border-radius: 12px;
+      padding: 12px 10px;
       text-align: center;
-      border: 2px solid transparent;
+      border: 2px solid #E2E8F0;
       cursor: pointer;
       transition: transform 0.1s ease, background 0.3s ease;
       position: relative;
@@ -62,7 +75,7 @@
     }
 
     /* STATE CARD STYLES */
-    .table-card.state-open { background: var(--card-open); border-color: #E2E8F0; opacity: 0.85; }
+    .table-card.state-open { background: #FFFFFF; border-color: #E2E8F0; opacity: 0.85; }
     .table-card.state-active { background: var(--card-active); border-color: #2E7D32; opacity: 1; color: #FFFFFF; }
     .table-card.state-expiring { background: var(--card-expiring); border-color: #E65100; opacity: 1; color: #FFFFFF; }
     .table-card.state-expired { background: var(--card-expired); border-color: #D32F2F; opacity: 1; color: #FFFFFF; }
@@ -83,21 +96,21 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
     }
 
-    .table-num { font-size: 1.4rem; font-weight: 800; color: var(--text-main); }
+    .table-num { font-size: 1.1rem; font-weight: 800; color: var(--text-main); }
     
     .bill-emoji {
-      font-size: 1.2rem;
+      font-size: 1rem;
       transition: filter 0.3s ease, opacity 0.3s ease;
     }
     .bill-faded { opacity: 0.3; filter: grayscale(100%); }
     .bill-approved { opacity: 1; filter: drop-shadow(0 0 4px #2E7D32); }
     
     .timer-display { 
-      font-size: 1.15rem; 
-      margin-top: 12px; 
+      font-size: 0.95rem; 
+      margin-top: 8px; 
       color: var(--text-muted); 
       font-weight: bold; 
       font-family: monospace;
@@ -207,9 +220,9 @@
     </div>
   </div>
 
-  <!-- BOUNDARY BOX CONTAINER -->
+  <!-- BOUNDARY BOX CONTAINER WITH WHITER FRAME -->
   <div class="dashboard-container">
-    <h1>📱 Counter Dashboard (Demo Mode)</h1>
+    <h1>📱 Counter Dashboard</h1>
     <div id="tableGrid" class="grid">Loading demo data...</div>
   </div>
 
