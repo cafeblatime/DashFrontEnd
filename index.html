@@ -51,7 +51,7 @@
     .grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
+      gap: 12px;
       max-width: 380px;
       margin: 0 auto;
     }
@@ -59,34 +59,39 @@
     .table-card {
       background: #FFFFFF;
       border-radius: 12px;
-      padding: 12px 10px;
+      padding: 14px 10px;
       text-align: center;
       border: 2px solid #E2E8F0;
-      transition: transform 0.1s ease, background 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      transition: transform 0.1s ease, background 0.3s ease, box-shadow 0.2s ease;
       position: relative;
     }
 
     .table-card.clickable { cursor: pointer; }
-    .table-card.clickable:active { transform: scale(0.96); }
+    .table-card.clickable:hover {
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      transform: translateY(-1px);
+    }
+    .table-card.clickable:active { transform: scale(0.96); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
 
-    .table-card.state-open { background: #FFFFFF; border-color: #E2E8F0; opacity: 0.85; cursor: default; }
-    .table-card.state-active { background: var(--card-active); border-color: #2E7D32; opacity: 1; color: #FFFFFF; }
-    .table-card.state-expiring { background: var(--card-expiring); border-color: #E65100; opacity: 1; color: #FFFFFF; }
-    .table-card.state-expired { background: var(--card-expired); border-color: #D32F2F; opacity: 1; color: #FFFFFF; }
+    .table-card.state-open { background: #FFFFFF; border-color: #E2E8F0; opacity: 0.85; cursor: default; box-shadow: none; }
+    .table-card.state-active { background: var(--card-active); border-color: #246527; opacity: 1; color: #FFFFFF; box-shadow: 0 4px 10px rgba(46, 125, 50, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2); }
+    .table-card.state-expiring { background: var(--card-expiring); border-color: #b33f00; opacity: 1; color: #FFFFFF; box-shadow: 0 4px 10px rgba(230, 81, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2); }
+    .table-card.state-expired { background: var(--card-expired); border-color: #a82424; opacity: 1; color: #FFFFFF; box-shadow: 0 4px 10px rgba(211, 47, 47, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2); }
 
     .table-card.state-active .table-num,
     .table-card.state-expiring .table-num,
-    .table-card.state-expired .table-num { color: #FFFFFF; }
+    .table-card.state-expired .table-num { color: #FFFFFF; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
 
     .table-card.state-active .timer-display,
     .table-card.state-expiring .timer-display,
-    .table-card.state-expired .timer-display { color: #FFEB3B; }
+    .table-card.state-expired .timer-display { color: #FFEB3B; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
 
     .table-header {
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
     }
 
     .table-num { font-size: 1.1rem; font-weight: 800; color: var(--text-main); text-transform: uppercase; }
@@ -135,12 +140,14 @@
       font-weight: bold;
       cursor: pointer;
       font-size: 0.95rem;
-      transition: background 0.2s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
     }
+    .btn-action:active { transform: scale(0.98); }
 
-    .btn-pay { background: #E2E8F0; color: var(--text-muted); }
-    .btn-pay.approved { background: #2E7D32; color: #FFFFFF; }
-    .btn-close { background: #E2E8F0; color: #1800ad; }
+    .btn-pay { background: #E2E8F0; color: var(--text-muted); box-shadow: 0 2px 5px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.8); }
+    .btn-pay.approved { background: #2E7D32; color: #FFFFFF; box-shadow: 0 3px 6px rgba(46, 125, 50, 0.3), inset 0 1px 0 rgba(255,255,255,0.2); }
+    .btn-close { background: #E2E8F0; color: #1800ad; box-shadow: 0 2px 5px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.8); }
 
     .verify-badge {
       display: inline-block;
@@ -202,6 +209,7 @@
       border: 1px solid #E2E8F0;
       font-size: 0.85rem;
       text-align: left;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.03);
     }
     .audio-settings label {
       display: flex;
@@ -272,11 +280,9 @@
 
     function updateVolume(val) {
       document.getElementById('volVal').innerText = val;
-      // Map 0-100 scale smoothly to an audio gain factor (0.0 to 1.0)
       alertVolume = val / 100;
     }
 
-    // Initialize Web Audio API synth sound with adjustable 0-100 volume scale
     function playAlertSound() {
       try {
         if (!audioCtx) {
@@ -530,21 +536,14 @@
       }
     }
 
-    async function togglePaymentStatus() {
+    function togglePaymentStatus() {
       if (!currentSelectedTable || !activeData[currentSelectedTable]) return;
 
       const t = activeData[currentSelectedTable];
       t.isPaid = !t.isPaid;
       updateModalPaidBtn();
       renderGrid();
-
-      if (APPS_SCRIPT_URL && !APPS_SCRIPT_URL.includes("YOUR_GOOGLE_APPS_SCRIPT") && t.isPaid) {
-        try {
-          await fetch(`${APPS_SCRIPT_URL}?table=${currentSelectedTable}&action=clear`);
-        } catch (err) {
-          console.error("Failed to sync payment status with sheet:", err);
-        }
-      }
+      // Removed the auto-clear fetch request completely so table status remains purely driven by Google Sheets sync time.
     }
 
     function closeModal() {
