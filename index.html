@@ -202,7 +202,7 @@
     }
 
     .audio-settings {
-      display: none; /* Initially hidden until tables are shown/unlocked */
+      display: none; /* Hidden during connecting state and until unlocked */
       margin-top: 15px;
       background: #FFFFFF;
       padding: 10px;
@@ -241,7 +241,7 @@
     <h1>Counter Dashboard</h1>
     <div id="tableGrid" class="grid">Connecting...</div>
 
-    <!-- Volume Control Panel (Hidden until tables are unlocked/shown) -->
+    <!-- Volume Control Panel (Hidden during connection and unlocked only along with tables setup) -->
     <div class="audio-settings" id="audioSettingsPanel">
       <label>
         <span>Alert Volume</span>
@@ -330,8 +330,6 @@
 
       if (enteredPin === MANAGER_PIN) {
         document.getElementById('pinOverlay').style.display = 'none';
-        // Reveal the audio settings panel once tables/dashboard are unlocked
-        document.getElementById('audioSettingsPanel').style.display = 'block';
 
         if (!audioCtx) {
           audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -373,6 +371,9 @@
 
           activeData = result.tables;
           renderGrid();
+
+          // Reveal the audio settings panel along with the table setup once data is successfully loaded and connected
+          document.getElementById('audioSettingsPanel').style.display = 'block';
 
           if (hasNewActiveTable) {
             playAlertSound();
