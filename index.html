@@ -152,8 +152,8 @@
       transition: background 0.2s;
     }
 
-    .btn-pay { background: #2E7D32; color: #FFFFFF; }
-    .btn-pay.approved { background: #E2E8F0; color: var(--text-muted); }
+    .btn-pay { background: #E2E8F0; color: var(--text-muted); }
+    .btn-pay.approved { background: #2E7D32; color: #FFFFFF; }
     .btn-close { background: #E2E8F0; color: #1800ad; }
 
     .verify-badge {
@@ -219,7 +219,7 @@
       <p style="color:var(--text-muted); font-size:0.9rem;">Enter 4-digit PIN code:</p>
       <input type="password" id="pinInput" maxlength="4" class="pin-input" pattern="\d*" inputmode="numeric">
       <div id="pinError" class="pin-error">Incorrect PIN. Try again.</div>
-      <button class="btn-action btn-pay" onclick="verifyPin()" style="margin-top:8px;">Enter</button>
+      <button class="btn-action btn-pay approved" onclick="verifyPin()" style="margin-top:8px;">Enter</button>
     </div>
   </div>
 
