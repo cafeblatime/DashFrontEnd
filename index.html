@@ -8,11 +8,13 @@
     :root {
       --bg-color: #0F172A;
       --card-open: #1E293B;
-      --card-busy: #1800AD;
-      --accent-green: #22C55E;
-      --accent-red: #EF4444;
+      --card-active: #1800AD;
+      --card-expiring: #C2410C;
+      --card-expired: #991B1B;
       --text-main: #F8FAFC;
       --text-muted: #94A3B8;
+      --accent-green: #22C55E;
+      --accent-red: #EF4444;
     }
 
     body {
@@ -40,26 +42,33 @@
       text-align: center;
       cursor: pointer;
       border: 2px solid transparent;
-      transition: transform 0.1s ease;
+      transition: transform 0.1s ease, background 0.3s ease;
     }
 
     .table-card:active { transform: scale(0.96); }
 
-    .table-card.active {
-      background: var(--card-busy);
-      border-color: #3B82F6;
-    }
+    /* STATE CARD STYLES */
+    .table-card.state-open { background: var(--card-open); border-color: #334155; }
+    .table-card.state-active { background: var(--card-active); border-color: #3B82F6; }
+    .table-card.state-expiring { background: var(--card-expiring); border-color: #F97316; }
+    .table-card.state-expired { background: var(--card-expired); border-color: #EF4444; }
 
     .table-num { font-size: 1.4rem; font-weight: 800; }
-    .status-badge { font-size: 0.8rem; text-transform: uppercase; margin-top: 6px; font-weight: 600; }
-    .end-time { font-size: 0.9rem; margin-top: 8px; color: #FACC15; font-weight: bold; }
+    .status-badge { 
+      font-size: 0.75rem; 
+      text-transform: uppercase; 
+      margin-top: 6px; 
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .end-time { font-size: 0.85rem; margin-top: 8px; color: #FACC15; font-weight: bold; }
 
     /* Modal Styles */
     .modal {
       display: none;
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.7);
+      background: rgba(0, 0, 0, 0.75);
       align-items: center; justify-content: center;
       padding: 20px;
     }
@@ -77,7 +86,7 @@
       background: #334155;
       color: #FFF;
       border: none;
-      padding: 10px 16px;
+      padding: 12px 16px;
       border-radius: 8px;
       width: 100%;
       margin-top: 16px;
@@ -87,11 +96,11 @@
 
     .verify-badge {
       display: inline-block;
-      padding: 4px 8px;
+      padding: 6px 10px;
       border-radius: 6px;
       font-size: 0.8rem;
       font-weight: bold;
-      margin-top: 8px;
+      margin-top: 6px;
     }
     .verified { background: var(--accent-green); color: #000; }
     .unverified { background: var(--accent-red); color: #FFF; }
@@ -100,16 +109,16 @@
 <body>
 
   <h1>📱 Counter Dashboard</h1>
-  <div id="tableGrid" class="grid">Loading tables...</div>
+  <div id="tableGrid" class="grid">Loading floor plan...</div>
 
   <!-- DETAILS MODAL -->
   <div id="detailsModal" class="modal">
     <div class="modal-content">
-      <h2 id="modalTitle">Table X</h2>
+      <h2 id="modalTitle" style="margin-top:0;">Table X</h2>
       <hr style="border-color: #334155;">
       
       <p><strong>Order Summary:</strong></p>
-      <ul id="modalOrders" style="padding-left: 20px; color: var(--text-muted);"></ul>
+      <ul id="modalOrders" style="padding-left: 20px; color: var(--text-muted); font-size: 0.95rem;"></ul>
 
       <p><strong>Total Sum:</strong> $<span id="modalTotal">0.00</span></p>
       
@@ -142,18 +151,24 @@
       const grid = document.getElementById('tableGrid');
       grid.innerHTML = '';
 
-      Object.keys(activeData).forEach(tNum => {
+      // Sort numeric keys (Table 1, Table 2, etc.)
+      const sortedKeys = Object.keys(activeData).sort((a, b) => parseInt(a) - parseInt(b));
+
+      sortedKeys.forEach(tNum => {
         const t = activeData[tNum];
-        const isActive = (t.status === "Occupied" || t.status === "Busy");
+        const statusLower = t.status.toLowerCase();
 
         const card = document.createElement('div');
-        card.className = `table-card ${isActive ? 'active' : ''}`;
+        card.className = `table-card state-${statusLower}`;
         card.onclick = () => openModal(tNum);
+
+        let statusText = t.status.toUpperCase();
+        let showEndTime = (statusLower === 'active' || statusLower === 'expiring') && t.endTime;
 
         card.innerHTML = `
           <div class="table-num">Table ${t.table}</div>
-          <div class="status-badge" style="color: ${isActive ? '#60A5FA' : 'var(--text-muted)'}">${t.status}</div>
-          ${isActive && t.endTime ? `<div class="end-time">Ends: ${t.endTime}</div>` : ''}
+          <div class="status-badge">${statusText}</div>
+          ${showEndTime ? `<div class="end-time">Ends: ${t.endTime}</div>` : ''}
         `;
 
         grid.appendChild(card);
