@@ -202,6 +202,7 @@
     }
 
     .audio-settings {
+      display: none; /* Initially hidden until tables are shown/unlocked */
       margin-top: 15px;
       background: #FFFFFF;
       padding: 10px;
@@ -240,8 +241,8 @@
     <h1>Counter Dashboard</h1>
     <div id="tableGrid" class="grid">Connecting...</div>
 
-    <!-- Volume Control Panel (0 to 100 scale) -->
-    <div class="audio-settings">
+    <!-- Volume Control Panel (Hidden until tables are unlocked/shown) -->
+    <div class="audio-settings" id="audioSettingsPanel">
       <label>
         <span>Alert Volume</span>
         <span id="volVal">35</span>
@@ -329,6 +330,9 @@
 
       if (enteredPin === MANAGER_PIN) {
         document.getElementById('pinOverlay').style.display = 'none';
+        // Reveal the audio settings panel once tables/dashboard are unlocked
+        document.getElementById('audioSettingsPanel').style.display = 'block';
+
         if (!audioCtx) {
           audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         }
@@ -543,7 +547,6 @@
       t.isPaid = !t.isPaid;
       updateModalPaidBtn();
       renderGrid();
-      // Removed the auto-clear fetch request completely so table status remains purely driven by Google Sheets sync time.
     }
 
     function closeModal() {
