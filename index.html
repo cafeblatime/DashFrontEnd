@@ -6,15 +6,15 @@
   <title>Manager Live Dashboard - Demo Mode</title>
   <style>
     :root {
-      --bg-color: #0F172A;
-      --card-open: #1E293B;
-      --card-active: #166534;      /* Green */
-      --card-expiring: #C2410C;    /* Orange */
-      --card-expired: #991B1B;     /* Red */
-      --text-main: #F8FAFC;
-      --text-muted: #94A3B8;
-      --accent-green: #22C55E;
-      --accent-red: #EF4444;
+      --bg-color: #1800ad;
+      --card-open: #FAF9F6;
+      --card-active: #2E7D32;      /* Green */
+      --card-expiring: #E65100;    /* Orange */
+      --card-expired: #D32F2F;     /* Red */
+      --text-main: #1800ad;
+      --text-muted: #5A6B82;
+      --accent-green: #2E7D32;
+      --accent-red: #D32F2F;
     }
 
     body {
@@ -25,7 +25,7 @@
       margin: 0;
     }
 
-    h1 { font-size: 1.5rem; text-align: center; margin-bottom: 20px; color: #60A5FA; }
+    h1 { font-size: 1.5rem; text-align: center; margin-bottom: 20px; color: #FAF9F6; }
 
     .grid {
       display: grid;
@@ -40,19 +40,33 @@
       border-radius: 14px;
       padding: 18px 16px;
       text-align: center;
-      cursor: pointer;
       border: 2px solid transparent;
+      cursor: pointer;
       transition: transform 0.1s ease, background 0.3s ease;
       position: relative;
     }
 
-    .table-card:active { transform: scale(0.96); }
+    .table-card:active { 
+      transform: scale(0.96); 
+    }
 
     /* STATE CARD STYLES */
-    .table-card.state-open { background: var(--card-open); border-color: #334155; opacity: 0.5; }
-    .table-card.state-active { background: var(--card-active); border-color: #22C55E; opacity: 1; }
-    .table-card.state-expiring { background: var(--card-expiring); border-color: #F97316; opacity: 1; }
-    .table-card.state-expired { background: var(--card-expired); border-color: #EF4444; opacity: 1; }
+    .table-card.state-open { background: var(--card-open); border-color: #E2E8F0; opacity: 0.6; }
+    .table-card.state-active { background: var(--card-active); border-color: #2E7D32; opacity: 1; color: #FFFFFF; }
+    .table-card.state-expiring { background: var(--card-expiring); border-color: #E65100; opacity: 1; color: #FFFFFF; }
+    .table-card.state-expired { background: var(--card-expired); border-color: #D32F2F; opacity: 1; color: #FFFFFF; }
+
+    .table-card.state-active .table-num,
+    .table-card.state-expiring .table-num,
+    .table-card.state-expired .table-num {
+      color: #FFFFFF;
+    }
+
+    .table-card.state-active .timer-display,
+    .table-card.state-expiring .timer-display,
+    .table-card.state-expired .timer-display {
+      color: #FFEB3B;
+    }
 
     .table-header {
       display: flex;
@@ -61,19 +75,19 @@
       gap: 6px;
     }
 
-    .table-num { font-size: 1.4rem; font-weight: 800; }
+    .table-num { font-size: 1.4rem; font-weight: 800; color: var(--text-main); }
     
     .bill-emoji {
       font-size: 1.2rem;
       transition: filter 0.3s ease, opacity 0.3s ease;
     }
     .bill-faded { opacity: 0.3; filter: grayscale(100%); }
-    .bill-approved { opacity: 1; filter: drop-shadow(0 0 4px #22C55E); }
+    .bill-approved { opacity: 1; filter: drop-shadow(0 0 4px #2E7D32); }
     
     .timer-display { 
       font-size: 1.15rem; 
       margin-top: 12px; 
-      color: #FACC15; 
+      color: var(--text-muted); 
       font-weight: bold; 
       font-family: monospace;
     }
@@ -90,7 +104,8 @@
     }
 
     .modal-content {
-      background: #1E293B;
+      background: #FAF9F6;
+      color: #1800ad;
       padding: 24px;
       border-radius: 16px;
       max-width: 360px;
@@ -110,9 +125,9 @@
       transition: background 0.2s;
     }
 
-    .btn-pay { background: var(--accent-green); color: #000; }
-    .btn-pay.approved { background: #334155; color: var(--text-muted); }
-    .btn-close { background: #334155; color: #FFF; }
+    .btn-pay { background: #2E7D32; color: #FFFFFF; }
+    .btn-pay.approved { background: #E2E8F0; color: var(--text-muted); }
+    .btn-close { background: #E2E8F0; color: #1800ad; }
 
     .verify-badge {
       display: inline-block;
@@ -125,8 +140,8 @@
       width: 100%;
       box-sizing: border-box;
     }
-    .verified { background: var(--accent-green); color: #000; }
-    .unverified { background: var(--accent-red); color: #FFF; }
+    .verified { background: #2E7D32; color: #FFFFFF; }
+    .unverified { background: #D32F2F; color: #FFFFFF; }
 
     /* PIN Overlay Styles */
     #pinOverlay {
@@ -140,7 +155,7 @@
       justify-content: center;
     }
     .pin-box {
-      background: #1E293B;
+      background: #FAF9F6;
       padding: 30px;
       border-radius: 16px;
       text-align: center;
@@ -154,14 +169,14 @@
       text-align: center;
       width: 80%;
       padding: 10px;
-      background: #0F172A;
-      border: 2px solid #334155;
-      color: #FFF;
+      background: #FFFFFF;
+      border: 2px solid #E2E8F0;
+      color: #1800ad;
       border-radius: 8px;
       margin-bottom: 15px;
     }
     .pin-error {
-      color: var(--accent-red);
+      color: #D32F2F;
       font-size: 0.85rem;
       margin-top: 8px;
       display: none;
@@ -173,7 +188,7 @@
   <!-- PIN CODE OVERLAY -->
   <div id="pinOverlay">
     <div class="pin-box">
-      <h2 style="margin-top:0; color:#60A5FA; font-size: 1.2rem;">Manager Access</h2>
+      <h2 style="margin-top:0; color:#1800ad; font-size: 1.2rem;">Manager Access</h2>
       <p style="color:var(--text-muted); font-size:0.9rem;">Enter 4-digit PIN code:</p>
       <input type="password" id="pinInput" maxlength="4" class="pin-input" pattern="\d*" inputmode="numeric">
       <div id="pinError" class="pin-error">Incorrect PIN. Try again.</div>
@@ -188,7 +203,7 @@
   <div id="detailsModal" class="modal">
     <div class="modal-content">
       <h2 id="modalTitle" style="margin-top:0;">Table X</h2>
-      <hr style="border-color: #334155;">
+      <hr style="border-color: #E2E8F0;">
       
       <p><strong>Order Summary:</strong></p>
       <ul id="modalOrders" style="padding-left: 20px; color: var(--text-muted); font-size: 0.95rem;"></ul>
@@ -206,13 +221,12 @@
     // ==========================================
     // CONFIGURATION AREA
     // ==========================================
-    const MANAGER_PIN = "0070"; // <-- Change your 4-digit PIN code here manually anytime
+    const MANAGER_PIN = "0070"; 
     // ==========================================
 
     let activeData = {};
     let currentSelectedTable = null;
 
-    // Check PIN Logic on load
     window.addEventListener('DOMContentLoaded', () => {
       const pinInput = document.getElementById('pinInput');
       pinInput.focus();
@@ -235,7 +249,6 @@
       }
     }
 
-    // 5 Tables Demo Data including Menu Items + Focus Pass
     function loadDemoData() {
       activeData = {
         "1": { table: 1, status: "Active", secondsLeft: 1250, orders: ["1x Espresso", "1x Croissant", "Focus Pass (45 minutes)"], totalSum: 14.50, intervalCount: 1, isPaid: false },
@@ -258,15 +271,17 @@
         const statusLower = t.status.toLowerCase();
 
         const card = document.createElement('div');
+        const isOpen = statusLower === 'open';
+        
         card.className = `table-card state-${statusLower}`;
         card.onclick = () => openModal(tNum);
 
         const isPaid = t.isPaid;
         const billClass = isPaid ? 'bill-approved' : 'bill-faded';
-        const showBillEmoji = statusLower !== 'open';
+        const showBillEmoji = !isOpen;
 
         let timerText = "--:--";
-        if (statusLower === 'open') {
+        if (isOpen) {
           timerText = "Available";
         } else if (statusLower === 'expired') {
           timerText = "00:00";
@@ -315,12 +330,15 @@
       const ordersList = document.getElementById('modalOrders');
       ordersList.innerHTML = t.orders.length > 0 
         ? t.orders.map(item => `<li>${item}</li>`).join('')
-        : '<li>No items recorded</li>';
+        : '<li>No items recorded (Table is Open)</li>';
 
       document.getElementById('modalTotal').innerText = t.totalSum.toFixed(2);
 
       const verifyEl = document.getElementById('modalVerify');
-      if (t.intervalCount) {
+      if (t.status.toLowerCase() === 'open') {
+        verifyEl.innerText = "Table is available";
+        verifyEl.className = "verify-badge unverified";
+      } else if (t.intervalCount) {
         verifyEl.innerText = "Focus time is on";
         verifyEl.className = "verify-badge verified";
       } else {
@@ -336,7 +354,14 @@
       const btn = document.getElementById('markPaidBtn');
       if (!currentSelectedTable || !activeData[currentSelectedTable]) return;
 
-      const isPaid = activeData[currentSelectedTable].isPaid;
+      const t = activeData[currentSelectedTable];
+      if (t.status.toLowerCase() === 'open') {
+        btn.style.display = 'none';
+        return;
+      }
+      btn.style.display = 'block';
+
+      const isPaid = t.isPaid;
       if (isPaid) {
         btn.innerText = "✓ Paid & Approved";
         btn.className = "btn-action btn-pay approved";
