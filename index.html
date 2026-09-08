@@ -1,4 +1,291 @@
-<script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manager Dashboard</title>
+  <style>
+    :root {
+      --bg-color: #1800ad;
+      --card-bg: #FAF9F6;
+      --royal-blue: #1800ad;
+      --royal-blue-hover: #12008A;
+      --text-main: #1800ad;
+      --text-muted: #5A6B82;
+      --border-color: #E2E8F0;
+      --accent-red: #D32F2F;
+      --accent-orange: #E65100;
+      --accent-green: #2E7D32;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg-color);
+      color: var(--text-main);
+      margin: 0;
+      padding: 20px;
+    }
+
+    /* PIN Overlay */
+    .pin-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: var(--bg-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+    .pin-card {
+      background: var(--card-bg);
+      padding: 30px;
+      border-radius: 20px;
+      text-align: center;
+      max-width: 320px;
+      width: 90%;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .pin-card h2 {
+      margin-top: 0;
+      color: var(--royal-blue);
+      font-size: 1.2rem;
+      text-transform: uppercase;
+    }
+    .pin-input {
+      width: 100%;
+      padding: 12px;
+      font-size: 1.2rem;
+      text-align: center;
+      border: 2px solid var(--border-color);
+      border-radius: 10px;
+      box-sizing: border-box;
+      margin-bottom: 15px;
+      outline: none;
+    }
+    .pin-error {
+      color: var(--accent-red);
+      font-size: 0.85rem;
+      margin-bottom: 10px;
+      display: none;
+    }
+
+    /* Dashboard Layout */
+    .dashboard-container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-bg);
+      padding: 15px 24px;
+      border-radius: 16px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .header-bar h1 {
+      margin: 0;
+      font-size: 1.2rem;
+      color: var(--royal-blue);
+      text-transform: uppercase;
+    }
+
+    /* Audio Panel */
+    .audio-settings {
+      background: #FFFFFF;
+      padding: 10px 15px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      font-size: 0.85rem;
+      display: none;
+      margin-bottom: 20px;
+    }
+    .audio-settings label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      color: var(--text-main);
+    }
+    .audio-settings input[type="range"] {
+      width: 100%;
+      margin-top: 5px;
+    }
+
+    /* Table Grid */
+    .table-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    .table-card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 16px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      position: relative;
+      transition: transform 0.1s ease;
+    }
+    .table-card.clickable {
+      cursor: pointer;
+    }
+    .table-card.clickable:hover {
+      transform: translateY(-2px);
+    }
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .table-num {
+      font-weight: bold;
+      color: var(--royal-blue);
+      font-size: 1rem;
+    }
+    .bill-emoji {
+      font-size: 1.1rem;
+    }
+    .bill-faded {
+      opacity: 0.3;
+    }
+    .bill-approved {
+      opacity: 1;
+    }
+    .timer-display {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--royal-blue);
+    }
+    
+    /* State styling */
+    .state-open .timer-display { color: var(--text-muted); font-size: 1.1rem; }
+    .state-expiring .timer-display { color: var(--accent-orange); }
+    .state-expired .timer-display { color: var(--accent-red); }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.4);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-card {
+      background: #FFFFFF;
+      padding: 24px;
+      border-radius: 16px;
+      max-width: 320px;
+      width: 90%;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      text-align: left;
+    }
+    .modal-card h2 {
+      margin-top: 0;
+      font-size: 1.1rem;
+      color: var(--royal-blue);
+    }
+    .orders-list {
+      max-height: 120px;
+      overflow-y: auto;
+      margin: 10px 0;
+      padding-left: 20px;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    .modal-total {
+      font-weight: bold;
+      margin: 10px 0;
+      font-size: 1rem;
+    }
+    .verify-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+    .verify-badge.verified { background: rgba(46,125,50,0.1); color: var(--accent-green); }
+    .verify-badge.unverified { background: rgba(211,47,47,0.1); color: var(--accent-red); }
+
+    .btn {
+      background: var(--royal-blue);
+      color: #FFFFFF;
+      border: none;
+      padding: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+    }
+    .btn-action {
+      margin-top: 8px;
+    }
+    .btn-pay {
+      background: var(--accent-orange);
+    }
+    .btn-pay.approved {
+      background: var(--accent-green);
+    }
+    .btn-close {
+      background: #E2E8F0;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PIN Protection Overlay -->
+  <div id="pinOverlay" class="pin-overlay">
+    <div class="pin-card">
+      <h2>Manager Access</h2>
+      <input type="password" id="pinInput" class="pin-input" placeholder="Enter PIN" maxlength="4">
+      <div id="pinError" class="pin-error">Incorrect PIN. Try again.</div>
+      <button class="btn" onclick="verifyPin()">Unlock Dashboard</button>
+    </div>
+  </div>
+
+  <!-- Main Dashboard Layout -->
+  <div class="dashboard-container">
+    <div class="header-bar">
+      <h1>Café Live Dashboard</h1>
+    </div>
+
+    <!-- Audio Settings Panel -->
+    <div class="audio-settings" id="audioSettingsPanel">
+      <label>
+        <span>Alert Volume</span>
+        <span id="volVal">35</span>
+      </label>
+      <input type="range" id="volumeSlider" min="0" max="100" value="35" oninput="updateVolume(this.value)">
+    </div>
+
+    <!-- Tables Grid Container -->
+    <div id="tableGrid" class="table-grid"></div>
+  </div>
+
+  <!-- Table Details Modal -->
+  <div id="detailsModal" class="modal-overlay">
+    <div class="modal-card">
+      <h2 id="modalTitle">Table Details</h2>
+      <div id="modalVerify" class="verify-badge">Checking...</div>
+      <div style="font-size: 0.85rem; font-weight: bold; color: var(--text-muted);">Orders & Items:</div>
+      <ul id="modalOrders" class="orders-list"></ul>
+      <div class="modal-total">Total: $<span id="modalTotal">0.00</span></div>
+      
+      <button id="markPaidBtn" class="btn btn-action btn-pay" onclick="togglePaymentStatus()">Mark as Paid</button>
+      <button class="btn btn-action btn-close" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+
+  <script>
     const MANAGER_PIN = "0070"; 
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxjQtbuew_onZqKqSEO49KeMQwIwm-t5VBwwSC1l8XcBE-7bWcjcnUDS4Jv9lNHgC2HbQ/exec"; 
 
@@ -281,10 +568,10 @@
       const isPaid = t.isPaid;
       if (isPaid) {
         btn.innerText = "✓ Paid & Approved";
-        btn.className = "btn-action btn-pay approved";
+        btn.className = "btn btn-action btn-pay approved";
       } else {
         btn.innerText = "Mark as Paid";
-        btn.className = "btn-action btn-pay";
+        btn.className = "btn btn-action btn-pay";
       }
     }
 
@@ -302,3 +589,5 @@
       currentSelectedTable = null;
     }
   </script>
+</body>
+</html>
