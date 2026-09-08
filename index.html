@@ -8,9 +8,9 @@
     :root {
       --bg-color: #0F172A;
       --card-open: #1E293B;
-      --card-active: #1800AD;
-      --card-expiring: #C2410C;
-      --card-expired: #991B1B;
+      --card-active: #166534;      /* Green */
+      --card-expiring: #C2410C;    /* Orange */
+      --card-expired: #991B1B;     /* Red */
       --text-main: #F8FAFC;
       --text-muted: #94A3B8;
       --accent-green: #22C55E;
@@ -31,14 +31,14 @@
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       gap: 14px;
-      max-width: 800px;
+      max-width: 900px;
       margin: 0 auto;
     }
 
     .table-card {
       background: var(--card-open);
       border-radius: 14px;
-      padding: 16px;
+      padding: 18px 16px;
       text-align: center;
       cursor: pointer;
       border: 2px solid transparent;
@@ -49,8 +49,8 @@
     .table-card:active { transform: scale(0.96); }
 
     /* STATE CARD STYLES */
-    .table-card.state-open { background: var(--card-open); border-color: #334155; opacity: 0.6; }
-    .table-card.state-active { background: var(--card-active); border-color: #3B82F6; opacity: 1; }
+    .table-card.state-open { background: var(--card-open); border-color: #334155; opacity: 0.5; }
+    .table-card.state-active { background: var(--card-active); border-color: #22C55E; opacity: 1; }
     .table-card.state-expiring { background: var(--card-expiring); border-color: #F97316; opacity: 1; }
     .table-card.state-expired { background: var(--card-expired); border-color: #EF4444; opacity: 1; }
 
@@ -69,18 +69,10 @@
     }
     .bill-faded { opacity: 0.3; filter: grayscale(100%); }
     .bill-approved { opacity: 1; filter: drop-shadow(0 0 4px #22C55E); }
-
-    .status-badge { 
-      font-size: 0.75rem; 
-      text-transform: uppercase; 
-      margin-top: 6px; 
-      font-weight: 700;
-      letter-spacing: 0.5px;
-    }
     
     .timer-display { 
-      font-size: 1.1rem; 
-      margin-top: 8px; 
+      font-size: 1.15rem; 
+      margin-top: 12px; 
       color: #FACC15; 
       font-weight: bold; 
       font-family: monospace;
@@ -124,11 +116,14 @@
 
     .verify-badge {
       display: inline-block;
-      padding: 6px 10px;
+      padding: 8px 12px;
       border-radius: 6px;
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       font-weight: bold;
-      margin-top: 6px;
+      margin-top: 8px;
+      text-align: center;
+      width: 100%;
+      box-sizing: border-box;
     }
     .verified { background: var(--accent-green); color: #000; }
     .unverified { background: var(--accent-red); color: #FFF; }
@@ -200,7 +195,6 @@
 
       <p><strong>Total Sum:</strong> $<span id="modalTotal">0.00</span></p>
       
-      <p><strong>Focus Time Verification:</strong></p>
       <div id="modalVerify" class="verify-badge">Checking...</div>
 
       <button id="markPaidBtn" class="btn-action btn-pay" onclick="togglePaymentStatus()">Mark as Paid</button>
@@ -233,20 +227,22 @@
 
       if (enteredPin === MANAGER_PIN) {
         document.getElementById('pinOverlay').style.display = 'none';
-        loadDemoData(); // Load fake mock data immediately so you can see the dashboard work!
+        loadDemoData(); 
+        setInterval(updateDemoTimers, 1000);
       } else {
         errorEl.style.display = 'block';
         document.getElementById('pinInput').value = '';
       }
     }
 
-    // Mock/Demo Data to instantly show how the UI looks and behaves without waiting on Google Sheets
+    // 5 Tables Demo Data including Menu Items + Focus Pass
     function loadDemoData() {
       activeData = {
-        "1": { table: 1, status: "Active", endTime: "18:30", orders: ["1x Espresso", "1x Croissant"], totalSum: 8.50, intervalCount: 1, isPaid: false },
-        "2": { table: 2, status: "Open", endTime: "", orders: [], totalSum: 0.00, intervalCount: 0, isPaid: false },
-        "3": { table: 3, status: "Expiring", endTime: "16:28", orders: ["2x Cappuccino", "1x Cheesecake"], totalSum: 16.00, intervalCount: 2, isPaid: true },
-        "4": { table: 4, status: "Expired", endTime: "16:10", orders: ["1x Latte"], totalSum: 4.50, intervalCount: 1, isPaid: false }
+        "1": { table: 1, status: "Active", secondsLeft: 1250, orders: ["1x Espresso", "1x Croissant", "Focus Pass (1 Hour)"], totalSum: 14.50, intervalCount: 1, isPaid: false },
+        "2": { table: 2, status: "Open", secondsLeft: 0, orders: [], totalSum: 0.00, intervalCount: 0, isPaid: false },
+        "3": { table: 3, status: "Expiring", secondsLeft: 180, orders: ["2x Cappuccino", "1x Cheesecake", "Focus Pass (2 Hours)"], totalSum: 26.00, intervalCount: 1, isPaid: true },
+        "4": { table: 4, status: "Expired", secondsLeft: 0, orders: ["1x Latte", "Focus Pass (1 Hour)"], totalSum: 10.50, intervalCount: 1, isPaid: false },
+        "5": { table: 5, status: "Active", secondsLeft: 2400, orders: ["1x Mocha", "Focus Pass (1 Hour)"], totalSum: 12.00, intervalCount: 1, isPaid: false }
       };
       renderGrid();
     }
@@ -269,17 +265,44 @@
         const billClass = isPaid ? 'bill-approved' : 'bill-faded';
         const showBillEmoji = statusLower !== 'open';
 
+        let timerText = "--:--";
+        if (statusLower === 'open') {
+          timerText = "Available";
+        } else if (statusLower === 'expired') {
+          timerText = "00:00";
+        } else {
+          const mins = Math.floor(t.secondsLeft / 60);
+          const secs = t.secondsLeft % 60;
+          timerText = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
         card.innerHTML = `
           <div class="table-header">
             <span class="table-num">Table ${t.table}</span>
             ${showBillEmoji ? `<span class="bill-emoji ${billClass}">💵</span>` : ''}
           </div>
-          <div class="status-badge">${t.status.toUpperCase()}</div>
-          <div class="timer-display" id="timer-${tNum}">Active</div>
+          <div class="timer-display" id="timer-${tNum}">${timerText}</div>
         `;
 
         grid.appendChild(card);
       });
+    }
+
+    function updateDemoTimers() {
+      Object.keys(activeData).forEach(tNum => {
+        const t = activeData[tNum];
+        if (t.status.toLowerCase() === 'active' || t.status.toLowerCase() === 'expiring') {
+          if (t.secondsLeft > 0) {
+            t.secondsLeft--;
+            if (t.secondsLeft <= 300 && t.status.toLowerCase() === 'active') {
+              t.status = 'Expiring';
+            }
+          } else {
+            t.status = 'Expired';
+          }
+        }
+      });
+      renderGrid();
     }
 
     function openModal(tNum) {
@@ -298,10 +321,10 @@
 
       const verifyEl = document.getElementById('modalVerify');
       if (t.intervalCount) {
-        verifyEl.innerText = "✓ VERIFIED (Interval Active)";
+        verifyEl.innerText = "Focus time is on";
         verifyEl.className = "verify-badge verified";
       } else {
-        verifyEl.innerText = "✕ NOT VERIFIED";
+        verifyEl.innerText = "Focus time is off";
         verifyEl.className = "verify-badge unverified";
       }
 
