@@ -236,6 +236,37 @@
     let activeData = {};
     let currentSelectedTable = null;
     let pollInterval = null;
+    let audioCtx = null;
+
+    // Initialize Web Audio API synth sound (avoids external asset loading dependencies)
+    function playAlertSound() {
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5 note
+        osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.15); // A5 note
+        
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.4);
+      } catch (e) {
+        console.warn("Audio playback prevented or not supported:", e);
+      }
+    }
 
     window.addEventListener('DOMContentLoaded', () => {
       const pinInput = document.getElementById('pinInput');
@@ -251,6 +282,10 @@
 
       if (enteredPin === MANAGER_PIN) {
         document.getElementById('pinOverlay').style.display = 'none';
+        // Unlock audio context on user interaction
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
         fetchDashboardData(); 
         pollInterval = setInterval(fetchDashboardData, 10000); 
       } else {
@@ -267,6 +302,8 @@
         const result = await response.json();
         
         if (result.status === "success" && result.tables) {
+          let hasNewActiveTable = false;
+
           Object.keys(result.tables).forEach(tNum => {
             if (activeData[tNum] && activeData[tNum].isPaid !== undefined) {
               result.tables[tNum].isPaid = activeData[tNum].isPaid;
@@ -275,10 +312,22 @@
             }
             
             result.tables[tNum].secondsLeft = parseEndTimeToSeconds(result.tables[tNum].endTime);
+
+            // Check if a table transitioned from 'open' to an active state ('active' or 'expiring')
+            const oldStatus = activeData[tNum] ? activeData[tNum].status.toLowerCase() : 'open';
+            const newStatus = result.tables[tNum].status.toLowerCase();
+            
+            if (oldStatus === 'open' && (newStatus === 'active' || newStatus === 'expiring')) {
+              hasNewActiveTable = true;
+            }
           });
 
           activeData = result.tables;
           renderGrid();
+
+          if (hasNewActiveTable) {
+            playAlertSound();
+          }
           
           if (currentSelectedTable && activeData[currentSelectedTable]) {
             updateModalContent(currentSelectedTable);
@@ -450,7 +499,6 @@
       updateModalPaidBtn();
       renderGrid();
 
-      // Only trigger a clear action when explicitly marking as paid / clearing the table
       if (APPS_SCRIPT_URL && !APPS_SCRIPT_URL.includes("YOUR_GOOGLE_APPS_SCRIPT") && t.isPaid) {
         try {
           await fetch(`${APPS_SCRIPT_URL}?table=${currentSelectedTable}&action=clear`);
