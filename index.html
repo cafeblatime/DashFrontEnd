@@ -274,9 +274,8 @@
           osc.stop(ctx.currentTime + start + duration);
         }
 
-        // Two-tone arrival chime
-        tone(523.25, 0, 0.2); // C5
-        tone(659.25, 0.25, 0.4); // E5
+        tone(523.25, 0, 0.2); 
+        tone(659.25, 0.25, 0.4); 
       } catch (e) {
         console.log("Audio play blocked", e);
       }
@@ -312,7 +311,6 @@
           const newData = json.tables;
           const currentActiveTables = new Set();
 
-          // Retain local payment approval states across polling refreshes
           Object.keys(newData).forEach(tNum => {
             if (activeData[tNum] && activeData[tNum].isPaid !== undefined) {
               newData[tNum].isPaid = activeData[tNum].isPaid;
@@ -326,7 +324,6 @@
             }
           });
 
-          // Check for newly entered tables
           let newTableDetected = false;
           currentActiveTables.forEach(tNum => {
             if (!previousActiveTables.has(tNum)) {
@@ -342,9 +339,12 @@
           previousActiveTables = currentActiveTables;
           activeData = newData;
           renderGrid();
+        } else {
+          document.getElementById('tableGrid').innerHTML = `<p style="color:var(--accent-red); text-align:center;">Backend Error: Check Apps Script setup.</p>`;
         }
       } catch (err) {
         console.error("Failed to load dashboard:", err);
+        document.getElementById('tableGrid').innerHTML = `<p style="color:var(--accent-red); text-align:center;">Connection Failed. Check script URL or network.</p>`;
       }
     }
 
