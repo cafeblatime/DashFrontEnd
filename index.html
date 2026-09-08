@@ -25,7 +25,6 @@
       margin: 0;
     }
 
-    /* Dashboard Container Box (Whiter background frame) */
     .dashboard-container {
       background: #FAF9F6;
       border: 1px solid rgba(255, 255, 255, 0.2);
@@ -36,7 +35,6 @@
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     }
 
-    /* Header styling with dark royal blue */
     h1 { 
       font-size: 1.25rem; 
       text-align: center; 
@@ -50,7 +48,6 @@
       text-transform: uppercase; 
     }
 
-    /* Grid configuration to fit 2 smaller tables side by side */
     .grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -69,15 +66,9 @@
       position: relative;
     }
 
-    .table-card.clickable {
-      cursor: pointer;
-    }
+    .table-card.clickable { cursor: pointer; }
+    .table-card.clickable:active { transform: scale(0.96); }
 
-    .table-card.clickable:active { 
-      transform: scale(0.96); 
-    }
-
-    /* STATE CARD STYLES */
     .table-card.state-open { background: #FFFFFF; border-color: #E2E8F0; opacity: 0.85; cursor: default; }
     .table-card.state-active { background: var(--card-active); border-color: #2E7D32; opacity: 1; color: #FFFFFF; }
     .table-card.state-expiring { background: var(--card-expiring); border-color: #E65100; opacity: 1; color: #FFFFFF; }
@@ -85,15 +76,11 @@
 
     .table-card.state-active .table-num,
     .table-card.state-expiring .table-num,
-    .table-card.state-expired .table-num {
-      color: #FFFFFF;
-    }
+    .table-card.state-expired .table-num { color: #FFFFFF; }
 
     .table-card.state-active .timer-display,
     .table-card.state-expiring .timer-display,
-    .table-card.state-expired .timer-display {
-      color: #FFEB3B;
-    }
+    .table-card.state-expired .timer-display { color: #FFEB3B; }
 
     .table-header {
       display: flex;
@@ -119,7 +106,6 @@
       font-family: monospace;
     }
 
-    /* Modal Styles */
     .modal {
       display: none;
       position: fixed;
@@ -170,7 +156,6 @@
     .verified { background: #2E7D32; color: #FFFFFF; }
     .unverified { background: #D32F2F; color: #FFFFFF; }
 
-    /* PIN Overlay Styles */
     #pinOverlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -212,7 +197,6 @@
 </head>
 <body>
 
-  <!-- PIN CODE OVERLAY -->
   <div id="pinOverlay">
     <div class="pin-box">
       <h2 style="margin-top:0; color:#1800ad; font-size: 1.2rem;">Manager Access</h2>
@@ -223,13 +207,11 @@
     </div>
   </div>
 
-  <!-- BOUNDARY BOX CONTAINER WITH WHITER FRAME -->
   <div class="dashboard-container">
     <h1>Counter Dashboard</h1>
     <div id="tableGrid" class="grid">Connecting to Google Sheets...</div>
   </div>
 
-  <!-- DETAILS MODAL -->
   <div id="detailsModal" class="modal">
     <div class="modal-content">
       <h2 id="modalTitle" style="margin-top:0;">Table X</h2>
@@ -248,13 +230,8 @@
   </div>
 
   <script>
-    // ==========================================
-    // CONFIGURATION AREA
-    // ==========================================
     const MANAGER_PIN = "0070"; 
-    // Configured with your deployed Google Apps Script Web App URL
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxjQtbuew_onZqKqSEO49KeMQwIwm-t5VBwwSC1l8XcBE-7bWcjcnUDS4Jv9lNHgC2HbQ/exec"; 
-    // ==========================================
 
     let activeData = {};
     let currentSelectedTable = null;
@@ -275,7 +252,7 @@
       if (enteredPin === MANAGER_PIN) {
         document.getElementById('pinOverlay').style.display = 'none';
         fetchDashboardData(); 
-        pollInterval = setInterval(fetchDashboardData, 10000); // Poll sheet every 10 seconds
+        pollInterval = setInterval(fetchDashboardData, 10000); 
       } else {
         errorEl.style.display = 'block';
         document.getElementById('pinInput').value = '';
@@ -283,32 +260,26 @@
     }
 
     async function fetchDashboardData() {
-      if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("YOUR_GOOGLE_APPS_SCRIPT")) {
-        document.getElementById('tableGrid').innerHTML = '<div style="grid-column: span 2; text-align: center; color: #D32F2F; font-size: 0.85rem; padding: 10px;">Error: Please insert your Apps Script Web App URL in the code configuration area.</div>';
-        return;
-      }
+      if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("YOUR_GOOGLE_APPS_SCRIPT")) return;
 
       try {
         const response = await fetch(`${APPS_SCRIPT_URL}?action=manager`);
         const result = await response.json();
         
         if (result.status === "success" && result.tables) {
-          // Keep track of local payment states if already toggled locally
           Object.keys(result.tables).forEach(tNum => {
             if (activeData[tNum] && activeData[tNum].isPaid !== undefined) {
               result.tables[tNum].isPaid = activeData[tNum].isPaid;
             } else {
-              result.tables[tNum].isPaid = false; // default un-paid
+              result.tables[tNum].isPaid = false; 
             }
             
-            // Calculate secondsLeft client-side based on returned endTime string
             result.tables[tNum].secondsLeft = parseEndTimeToSeconds(result.tables[tNum].endTime);
           });
 
           activeData = result.tables;
           renderGrid();
           
-          // If modal is open, refresh modal info too
           if (currentSelectedTable && activeData[currentSelectedTable]) {
             updateModalContent(currentSelectedTable);
           }
@@ -393,7 +364,6 @@
       });
     }
 
-    // Client-side smooth countdown ticker every second
     setInterval(() => {
       Object.keys(activeData).forEach(tNum => {
         const t = activeData[tNum];
@@ -407,7 +377,6 @@
             t.status = 'Expired';
           }
           
-          // Update card DOM elements directly for smooth UI without full re-render
           const timerEl = document.getElementById(`timer-${tNum}`);
           if (timerEl) {
             const mins = Math.floor(t.secondsLeft / 60);
@@ -442,10 +411,10 @@
         verifyEl.innerText = "Table is available";
         verifyEl.className = "verify-badge unverified";
       } else if (t.intervalCount) {
-        verifyEl.innerText = "Focus time is on";
+        verifyEl.innerText = "Focus pass is verified (Yes)";
         verifyEl.className = "verify-badge verified";
       } else {
-        verifyEl.innerText = "Focus time is off";
+        verifyEl.innerText = "Focus pass not verified";
         verifyEl.className = "verify-badge unverified";
       }
 
@@ -481,8 +450,8 @@
       updateModalPaidBtn();
       renderGrid();
 
-      // Send clear/update call to Google Apps Script backend if needed
-      if (APPS_SCRIPT_URL && !APPS_SCRIPT_URL.includes("YOUR_GOOGLE_APPS_SCRIPT")) {
+      // Only trigger a clear action when explicitly marking as paid / clearing the table
+      if (APPS_SCRIPT_URL && !APPS_SCRIPT_URL.includes("YOUR_GOOGLE_APPS_SCRIPT") && t.isPaid) {
         try {
           await fetch(`${APPS_SCRIPT_URL}?table=${currentSelectedTable}&action=clear`);
         } catch (err) {
