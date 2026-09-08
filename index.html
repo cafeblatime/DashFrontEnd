@@ -193,6 +193,27 @@
       margin-top: 8px;
       display: none;
     }
+
+    .audio-settings {
+      margin-top: 15px;
+      background: #FFFFFF;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #E2E8F0;
+      font-size: 0.85rem;
+      text-align: left;
+    }
+    .audio-settings label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      color: var(--text-main);
+    }
+    .audio-settings input[type="range"] {
+      width: 100%;
+      margin-top: 5px;
+    }
   </style>
 </head>
 <body>
@@ -210,6 +231,16 @@
   <div class="dashboard-container">
     <h1>Counter Dashboard</h1>
     <div id="tableGrid" class="grid">Connecting...</div>
+
+    <!-- Volume Control Panel (0 to 100 scale) -->
+    <div class="audio-settings">
+      <label>
+        <span>Alert Volume</span>
+        <span id="volVal">35</span>
+      </label>
+      <input type="range" id="volumeSlider" min="0" max="100" value="35" oninput="updateVolume(this.value)">
+      <button class="btn-action btn-pay" style="margin-top: 8px; padding: 6px;" onclick="playAlertSound()">Test Sound 🔊</button>
+    </div>
   </div>
 
   <div id="detailsModal" class="modal">
@@ -237,8 +268,15 @@
     let currentSelectedTable = null;
     let pollInterval = null;
     let audioCtx = null;
+    let alertVolume = 0.35; // default base gain matching 35 on the 0-100 scale
 
-    // Initialize Web Audio API synth sound (avoids external asset loading dependencies)
+    function updateVolume(val) {
+      document.getElementById('volVal').innerText = val;
+      // Map 0-100 scale smoothly to an audio gain factor (0.0 to 1.0)
+      alertVolume = val / 100;
+    }
+
+    // Initialize Web Audio API synth sound with adjustable 0-100 volume scale
     function playAlertSound() {
       try {
         if (!audioCtx) {
@@ -248,21 +286,24 @@
           audioCtx.resume();
         }
         
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
+        const now = audioCtx.currentTime;
         
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5 note
-        osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.15); // A5 note
-        
-        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
-        
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.4);
+        [587.33, 880].forEach((freq, index) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + (index * 0.1));
+          
+          gain.gain.setValueAtTime(alertVolume, now + (index * 0.1));
+          gain.gain.exponentialRampToValueAtTime(0.001, now + (index * 0.1) + 0.5);
+          
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          
+          osc.start(now + (index * 0.1));
+          osc.stop(now + (index * 0.1) + 0.5);
+        });
       } catch (e) {
         console.warn("Audio playback prevented or not supported:", e);
       }
@@ -282,7 +323,6 @@
 
       if (enteredPin === MANAGER_PIN) {
         document.getElementById('pinOverlay').style.display = 'none';
-        // Unlock audio context on user interaction
         if (!audioCtx) {
           audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         }
@@ -313,7 +353,6 @@
             
             result.tables[tNum].secondsLeft = parseEndTimeToSeconds(result.tables[tNum].endTime);
 
-            // Check if a table transitioned from 'open' to an active state ('active' or 'expiring')
             const oldStatus = activeData[tNum] ? activeData[tNum].status.toLowerCase() : 'open';
             const newStatus = result.tables[tNum].status.toLowerCase();
             
