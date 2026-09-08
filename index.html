@@ -238,11 +238,11 @@
     // 5 Tables Demo Data including Menu Items + Focus Pass
     function loadDemoData() {
       activeData = {
-        "1": { table: 1, status: "Active", secondsLeft: 1250, orders: ["1x Espresso", "1x Croissant", "Focus Pass (1 Hour)"], totalSum: 14.50, intervalCount: 1, isPaid: false },
+        "1": { table: 1, status: "Active", secondsLeft: 1250, orders: ["1x Espresso", "1x Croissant", "Focus Pass (45 minutes)"], totalSum: 14.50, intervalCount: 1, isPaid: false },
         "2": { table: 2, status: "Open", secondsLeft: 0, orders: [], totalSum: 0.00, intervalCount: 0, isPaid: false },
-        "3": { table: 3, status: "Expiring", secondsLeft: 180, orders: ["2x Cappuccino", "1x Cheesecake", "Focus Pass (2 Hours)"], totalSum: 26.00, intervalCount: 1, isPaid: true },
-        "4": { table: 4, status: "Expired", secondsLeft: 0, orders: ["1x Latte", "Focus Pass (1 Hour)"], totalSum: 10.50, intervalCount: 1, isPaid: false },
-        "5": { table: 5, status: "Active", secondsLeft: 2400, orders: ["1x Mocha", "Focus Pass (1 Hour)"], totalSum: 12.00, intervalCount: 1, isPaid: false }
+        "3": { table: 3, status: "Expiring", secondsLeft: 180, orders: ["2x Cappuccino", "1x Cheesecake", "Focus Pass (45 minutes)"], totalSum: 26.00, intervalCount: 1, isPaid: true },
+        "4": { table: 4, status: "Expired", secondsLeft: 0, orders: ["1x Latte", "Focus Pass (45 minutes)"], totalSum: 10.50, intervalCount: 1, isPaid: false },
+        "5": { table: 5, status: "Active", secondsLeft: 2400, orders: ["1x Mocha", "Focus Pass (45 minutes)"], totalSum: 12.00, intervalCount: 1, isPaid: false }
       };
       renderGrid();
     }
