@@ -362,7 +362,7 @@
             const oldStatus = activeData[tNum] ? activeData[tNum].status.toLowerCase() : 'open';
             const newStatus = result.tables[tNum].status.toLowerCase();
             
-            if (oldStatus === 'open' && (newStatus === 'active' || newStatus === 'expiring')) {
+            if (oldStatus === 'open' && (newStatus === 'active' || newStatus === 'expiring' || result.tables[tNum].secondsLeft > 0)) {
               hasNewActiveTable = true;
             }
           });
@@ -389,6 +389,14 @@
       if (!rawEnd) return 0;
       const now = new Date();
       
+      // Robustly handle ISO date strings or timestamps returned by Google Sheets/Apps Script
+      let endDate = new Date(rawEnd);
+      if (!isNaN(endDate.getTime()) && (String(rawEnd).includes('T') || String(rawEnd).includes('-') || String(rawEnd).includes('/'))) {
+        const diffMs = endDate.getTime() - now.getTime();
+        return Math.floor(diffMs / 1000);
+      }
+
+      // Fallback for standard time-only string formats (e.g., "14:30" or "2:30 PM")
       const timeStr = String(rawEnd).trim();
       const timeParts = timeStr.match(/(\d+):(\d+)(?::(\d+))?\s*(AM|PM)?/i);
       if (!timeParts) return 0;
@@ -403,7 +411,7 @@
         if (ampm.toUpperCase() === "AM" && hours === 12) hours = 0;
       }
 
-      const endDate = new Date(now);
+      endDate = new Date(now);
       endDate.setHours(hours, minutes, seconds, 0);
 
       const diffMs = endDate.getTime() - now.getTime();
@@ -420,6 +428,7 @@
         const t = activeData[tNum];
         let statusLower = t.status.toLowerCase();
 
+        // Properly match table card colors according to state and remaining time
         if (statusLower !== 'open') {
           if (t.secondsLeft <= 0) {
             statusLower = 'expired';
@@ -548,7 +557,7 @@
         btn.innerText = "Mark as Paid";
         btn.className = "btn-action btn-pay";
       }
-     }
+    }
 
     function togglePaymentStatus() {
       if (!currentSelectedTable || !activeData[currentSelectedTable]) return;
