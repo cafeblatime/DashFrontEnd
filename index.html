@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Manager Live Dashboard</title>
+  <title>Manager Live Dashboard - Demo Mode</title>
   <style>
     :root {
       --bg-color: #0F172A;
@@ -186,8 +186,8 @@
     </div>
   </div>
 
-  <h1>📱 Counter Dashboard</h1>
-  <div id="tableGrid" class="grid">Loading floor plan...</div>
+  <h1>📱 Counter Dashboard (Demo Mode)</h1>
+  <div id="tableGrid" class="grid">Loading demo data...</div>
 
   <!-- DETAILS MODAL -->
   <div id="detailsModal" class="modal">
@@ -212,14 +212,11 @@
     // ==========================================
     // CONFIGURATION AREA
     // ==========================================
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0XdbmciOU4y0-RAC4YOQVvZfKpZrPJ-exxZ6lBQgy/exec";
     const MANAGER_PIN = "0070"; // <-- Change your 4-digit PIN code here manually anytime
     // ==========================================
 
     let activeData = {};
-    let previousActiveTables = new Set();
     let currentSelectedTable = null;
-    let wakeLock = null;
 
     // Check PIN Logic on load
     window.addEventListener('DOMContentLoaded', () => {
@@ -236,116 +233,22 @@
 
       if (enteredPin === MANAGER_PIN) {
         document.getElementById('pinOverlay').style.display = 'none';
-        fetchDashboardData();
-        setInterval(fetchDashboardData, 10000); // Poll Apps Script backend every 10s
-        setInterval(updateTimers, 1000);        // Update countdown timers every 1s
+        loadDemoData(); // Load fake mock data immediately so you can see the dashboard work!
       } else {
         errorEl.style.display = 'block';
         document.getElementById('pinInput').value = '';
       }
     }
 
-    // Wake Screen API
-    async function requestWakeLock() {
-      try {
-        if ('wakeLock' in navigator) {
-          wakeLock = await navigator.wakeLock.request('screen');
-        }
-      } catch (err) {
-        console.log("Wake Lock error:", err);
-      }
-    }
-
-    // Audio Chime Player
-    function playNewTableChime() {
-      try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        const ctx = new AudioContext();
-        
-        function tone(freq, start, duration) {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.frequency.value = freq;
-          gain.gain.setValueAtTime(0.5, ctx.currentTime + start);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + duration);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start(ctx.currentTime + start);
-          osc.stop(ctx.currentTime + start + duration);
-        }
-
-        tone(523.25, 0, 0.2); 
-        tone(659.25, 0.25, 0.4); 
-      } catch (e) {
-        console.log("Audio play blocked", e);
-      }
-    }
-
-    function parseEndTime(endTimeStr) {
-      if (!endTimeStr) return null;
-      const now = new Date();
-      const match = endTimeStr.match(/(\d+):(\d+)(?::(\d+))?\s*(AM|PM)?/i);
-      if (!match) return null;
-
-      let hours = parseInt(match[1], 10);
-      let minutes = parseInt(match[2], 10);
-      let seconds = match[3] ? parseInt(match[3], 10) : 0;
-      let ampm = match[4];
-
-      if (ampm) {
-        if (ampm.toUpperCase() === "PM" && hours < 12) hours += 12;
-        if (ampm.toUpperCase() === "AM" && hours === 12) hours = 0;
-      }
-
-      const end = new Date(now);
-      end.setHours(hours, minutes, seconds, 0);
-      return end;
-    }
-
-    async function fetchDashboardData() {
-      try {
-        const res = await fetch(`${SCRIPT_URL}?action=manager`);
-        const json = await res.json();
-        
-        if (json.status === "success") {
-          const newData = json.tables;
-          const currentActiveTables = new Set();
-
-          Object.keys(newData).forEach(tNum => {
-            if (activeData[tNum] && activeData[tNum].isPaid !== undefined) {
-              newData[tNum].isPaid = activeData[tNum].isPaid;
-            } else {
-              newData[tNum].isPaid = false;
-            }
-
-            const status = newData[tNum].status.toLowerCase();
-            if (status === 'active' || status === 'expiring') {
-              currentActiveTables.add(tNum);
-            }
-          });
-
-          let newTableDetected = false;
-          currentActiveTables.forEach(tNum => {
-            if (!previousActiveTables.has(tNum)) {
-              newTableDetected = true;
-            }
-          });
-
-          if (newTableDetected) {
-            playNewTableChime();
-            requestWakeLock();
-          }
-
-          previousActiveTables = currentActiveTables;
-          activeData = newData;
-          renderGrid();
-        } else {
-          document.getElementById('tableGrid').innerHTML = `<p style="color:var(--accent-red); text-align:center;">Backend Error: Check Apps Script setup.</p>`;
-        }
-      } catch (err) {
-        console.error("Failed to load dashboard:", err);
-        document.getElementById('tableGrid').innerHTML = `<p style="color:var(--accent-red); text-align:center;">Connection Failed. Check script URL or network.</p>`;
-      }
+    // Mock/Demo Data to instantly show how the UI looks and behaves without waiting on Google Sheets
+    function loadDemoData() {
+      activeData = {
+        "1": { table: 1, status: "Active", endTime: "18:30", orders: ["1x Espresso", "1x Croissant"], totalSum: 8.50, intervalCount: 1, isPaid: false },
+        "2": { table: 2, status: "Open", endTime: "", orders: [], totalSum: 0.00, intervalCount: 0, isPaid: false },
+        "3": { table: 3, status: "Expiring", endTime: "16:28", orders: ["2x Cappuccino", "1x Cheesecake"], totalSum: 16.00, intervalCount: 2, isPaid: true },
+        "4": { table: 4, status: "Expired", endTime: "16:10", orders: ["1x Latte"], totalSum: 4.50, intervalCount: 1, isPaid: false }
+      };
+      renderGrid();
     }
 
     function renderGrid() {
@@ -372,49 +275,10 @@
             ${showBillEmoji ? `<span class="bill-emoji ${billClass}">💵</span>` : ''}
           </div>
           <div class="status-badge">${t.status.toUpperCase()}</div>
-          <div class="timer-display" id="timer-${tNum}">--:--</div>
+          <div class="timer-display" id="timer-${tNum}">Active</div>
         `;
 
         grid.appendChild(card);
-      });
-
-      updateTimers();
-    }
-
-    function updateTimers() {
-      const now = new Date();
-
-      Object.keys(activeData).forEach(tNum => {
-        const t = activeData[tNum];
-        const timerEl = document.getElementById(`timer-${tNum}`);
-        if (!timerEl) return;
-
-        const statusLower = t.status.toLowerCase();
-
-        if (statusLower === 'open') {
-          timerEl.innerText = '--:--';
-          return;
-        }
-
-        const endDate = parseEndTime(t.endTime);
-        if (!endDate) {
-          timerEl.innerText = '--:--';
-          return;
-        }
-
-        const diffMs = endDate.getTime() - now.getTime();
-
-        if (diffMs <= 0) {
-          timerEl.innerText = '00:00';
-          t.status = 'Expired';
-          const card = timerEl.closest('.table-card');
-          if (card) card.className = 'table-card state-expired';
-        } else {
-          const totalSecs = Math.floor(diffMs / 1000);
-          const mins = Math.floor(totalSecs / 60);
-          const secs = totalSecs % 60;
-          timerEl.innerText = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
-        }
       });
     }
 
