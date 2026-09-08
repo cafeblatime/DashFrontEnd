@@ -202,7 +202,7 @@
     }
 
     .audio-settings {
-      display: none; /* Hidden during connecting state and until unlocked */
+      display: none;
       margin-top: 15px;
       background: #FFFFFF;
       padding: 10px;
@@ -241,7 +241,6 @@
     <h1>Counter Dashboard</h1>
     <div id="tableGrid" class="grid">Connecting...</div>
 
-    <!-- Volume Control Panel (Hidden during connection and unlocked only along with tables setup) -->
     <div class="audio-settings" id="audioSettingsPanel">
       <label>
         <span>Alert Volume</span>
@@ -260,7 +259,7 @@
       <p><strong>Order Summary:</strong></p>
       <ul id="modalOrders" style="padding-left: 20px; color: var(--text-muted); font-size: 0.95rem;"></ul>
 
-      <p><strong>Total Sum:</strong> $<span id="modalTotal">0.00</span></p>
+      <p><strong>Total Sum:</strong> <span id="modalTotal">0.00</span> DKK</p>
       
       <div id="modalVerify" class="verify-badge">Checking...</div>
 
@@ -277,7 +276,8 @@
     let currentSelectedTable = null;
     let pollInterval = null;
     let audioCtx = null;
-    let alertVolume = 0.35; // default base gain matching 35 on the 0-100 scale
+    let alertVolume = 0.35; 
+    const CASHIER_BUFFER_SECS = 120; // 2 minutes silent background buffer
 
     function updateVolume(val) {
       document.getElementById('volVal').innerText = val;
@@ -294,7 +294,6 @@
         }
         
         const now = audioCtx.currentTime;
-        
         [587.33, 880].forEach((freq, index) => {
           const osc = audioCtx.createOscillator();
           const gain = audioCtx.createGain();
@@ -312,7 +311,7 @@
           osc.stop(now + (index * 0.1) + 0.5);
         });
       } catch (e) {
-        console.warn("Audio playback prevented or not supported:", e);
+        console.warn("Audio playback prevented:", e);
       }
     }
 
@@ -372,7 +371,6 @@
           activeData = result.tables;
           renderGrid();
 
-          // Reveal the audio settings panel along with the table setup once data is successfully loaded and connected
           document.getElementById('audioSettingsPanel').style.display = 'block';
 
           if (hasNewActiveTable) {
@@ -384,7 +382,7 @@
           }
         }
       } catch (err) {
-        console.error("Failed to fetch live data from Google Sheets:", err);
+        console.error("Failed to fetch live data:", err);
       }
     }
 
@@ -410,7 +408,7 @@
       endDate.setHours(hours, minutes, seconds, 0);
 
       const diffMs = endDate.getTime() - now.getTime();
-      return Math.max(0, Math.floor(diffMs / 1000));
+      return Math.floor(diffMs / 1000);
     }
 
     function renderGrid() {
@@ -421,7 +419,16 @@
 
       sortedKeys.forEach(tNum => {
         const t = activeData[tNum];
-        const statusLower = t.status.toLowerCase();
+        let statusLower = t.status.toLowerCase();
+
+        // Background 2-minute buffer logic (silent, keeps showing 00:00 or expiring state until buffer is exhausted)
+        if (statusLower !== 'open') {
+          if (t.secondsLeft < -CASHIER_BUFFER_SECS) {
+            statusLower = 'expired';
+          } else if (t.secondsLeft <= 0) {
+            statusLower = 'expiring'; 
+          }
+        }
 
         const card = document.createElement('div');
         const isOpen = statusLower === 'open';
@@ -443,7 +450,8 @@
         let timerText = "--:--";
         if (isOpen) {
           timerText = "Available";
-        } else if (statusLower === 'expired') {
+        } else if (t.secondsLeft <= 0) {
+          // Silent background buffer: display 00:00 instead of any visible buffer text
           timerText = "00:00";
         } else {
           const mins = Math.floor(t.secondsLeft / 60);
@@ -466,21 +474,22 @@
     setInterval(() => {
       Object.keys(activeData).forEach(tNum => {
         const t = activeData[tNum];
-        if (t.status.toLowerCase() === 'active' || t.status.toLowerCase() === 'expiring') {
-          if (t.secondsLeft > 0) {
-            t.secondsLeft--;
-            if (t.secondsLeft <= 300 && t.status.toLowerCase() === 'active') {
-              t.status = 'Expiring';
-            }
-          } else {
-            t.status = 'Expired';
-          }
+        if (t.status.toLowerCase() !== 'open') {
+          t.secondsLeft--;
           
+          if (t.secondsLeft <= 300 && t.secondsLeft > 0 && t.status.toLowerCase() === 'active') {
+            t.status = 'Expiring';
+          }
+
           const timerEl = document.getElementById(`timer-${tNum}`);
           if (timerEl) {
-            const mins = Math.floor(t.secondsLeft / 60);
-            const secs = t.secondsLeft % 60;
-            timerEl.innerText = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            if (t.secondsLeft <= 0) {
+              timerEl.innerText = "00:00";
+            } else {
+              const mins = Math.floor(t.secondsLeft / 60);
+              const secs = t.secondsLeft % 60;
+              timerEl.innerText = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            }
           }
         }
       });
@@ -498,9 +507,14 @@
 
       document.getElementById('modalTitle').innerText = `Table ${t.table} Details`;
       
+      let displayOrders = [...t.orders];
+      if (t.intervalCount) {
+        displayOrders.push("Focus Pass (45 minutes)");
+      }
+
       const ordersList = document.getElementById('modalOrders');
-      ordersList.innerHTML = t.orders.length > 0 
-        ? t.orders.map(item => `<li>${item}</li>`).join('')
+      ordersList.innerHTML = displayOrders.length > 0 
+        ? displayOrders.map(item => `<li>${item}</li>`).join('')
         : '<li>No items recorded</li>';
 
       document.getElementById('modalTotal').innerText = t.totalSum.toFixed(2);
