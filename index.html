@@ -65,17 +65,20 @@
       padding: 12px 10px;
       text-align: center;
       border: 2px solid #E2E8F0;
-      cursor: pointer;
       transition: transform 0.1s ease, background 0.3s ease;
       position: relative;
     }
 
-    .table-card:active { 
+    .table-card.clickable {
+      cursor: pointer;
+    }
+
+    .table-card.clickable:active { 
       transform: scale(0.96); 
     }
 
     /* STATE CARD STYLES */
-    .table-card.state-open { background: #FFFFFF; border-color: #E2E8F0; opacity: 0.85; }
+    .table-card.state-open { background: #FFFFFF; border-color: #E2E8F0; opacity: 0.85; cursor: default; }
     .table-card.state-active { background: var(--card-active); border-color: #2E7D32; opacity: 1; color: #FFFFFF; }
     .table-card.state-expiring { background: var(--card-expiring); border-color: #E65100; opacity: 1; color: #FFFFFF; }
     .table-card.state-expired { background: var(--card-expired); border-color: #D32F2F; opacity: 1; color: #FFFFFF; }
@@ -99,7 +102,7 @@
       gap: 4px;
     }
 
-    .table-num { font-size: 1.1rem; font-weight: 800; color: var(--text-main);text-transform: uppercase; }
+    .table-num { font-size: 1.1rem; font-weight: 800; color: var(--text-main); text-transform: uppercase; }
     
     .bill-emoji {
       font-size: 1rem;
@@ -301,7 +304,14 @@
         const isOpen = statusLower === 'open';
         
         card.className = `table-card state-${statusLower}`;
-        card.onclick = () => openModal(tNum);
+
+        if (isOpen) {
+          card.style.cursor = 'default';
+          card.onclick = null;
+        } else {
+          card.className += ' clickable';
+          card.onclick = () => openModal(tNum);
+        }
 
         const isPaid = t.isPaid;
         const billClass = isPaid ? 'bill-approved' : 'bill-faded';
