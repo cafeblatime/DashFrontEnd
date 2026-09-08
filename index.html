@@ -132,9 +132,59 @@
     }
     .verified { background: var(--accent-green); color: #000; }
     .unverified { background: var(--accent-red); color: #FFF; }
+
+    /* PIN Overlay Styles */
+    #pinOverlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--bg-color);
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .pin-box {
+      background: #1E293B;
+      padding: 30px;
+      border-radius: 16px;
+      text-align: center;
+      max-width: 300px;
+      width: 100%;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+    .pin-input {
+      font-size: 1.8rem;
+      letter-spacing: 8px;
+      text-align: center;
+      width: 80%;
+      padding: 10px;
+      background: #0F172A;
+      border: 2px solid #334155;
+      color: #FFF;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+    .pin-error {
+      color: var(--accent-red);
+      font-size: 0.85rem;
+      margin-top: 8px;
+      display: none;
+    }
   </style>
 </head>
 <body>
+
+  <!-- PIN CODE OVERLAY -->
+  <div id="pinOverlay">
+    <div class="pin-box">
+      <h2 style="margin-top:0; color:#60A5FA; font-size: 1.2rem;">Manager Access</h2>
+      <p style="color:var(--text-muted); font-size:0.9rem;">Enter 4-digit PIN code:</p>
+      <input type="password" id="pinInput" maxlength="4" class="pin-input" pattern="\d*" inputmode="numeric">
+      <div id="pinError" class="pin-error">Incorrect PIN. Try again.</div>
+      <button class="btn-action btn-pay" onclick="verifyPin()" style="margin-top:8px;">Enter</button>
+    </div>
+  </div>
 
   <h1>📱 Counter Dashboard</h1>
   <div id="tableGrid" class="grid">Loading floor plan...</div>
@@ -159,12 +209,41 @@
   </div>
 
   <script>
+    // ==========================================
+    // CONFIGURATION AREA
+    // ==========================================
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0XdbmciOU4y0-RAC4YOQVvZfKpZrPJ-exxZ6lBQgy/exec";
-    
+    const MANAGER_PIN = "0070"; // <-- Change your 4-digit PIN code here manually anytime
+    // ==========================================
+
     let activeData = {};
     let previousActiveTables = new Set();
     let currentSelectedTable = null;
     let wakeLock = null;
+
+    // Check PIN Logic on load
+    window.addEventListener('DOMContentLoaded', () => {
+      const pinInput = document.getElementById('pinInput');
+      pinInput.focus();
+      pinInput.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') verifyPin();
+      });
+    });
+
+    function verifyPin() {
+      const enteredPin = document.getElementById('pinInput').value;
+      const errorEl = document.getElementById('pinError');
+
+      if (enteredPin === MANAGER_PIN) {
+        document.getElementById('pinOverlay').style.display = 'none';
+        fetchDashboardData();
+        setInterval(fetchDashboardData, 10000); // Poll Apps Script backend every 10s
+        setInterval(updateTimers, 1000);        // Update countdown timers every 1s
+      } else {
+        errorEl.style.display = 'block';
+        document.getElementById('pinInput').value = '';
+      }
+    }
 
     // Wake Screen API
     async function requestWakeLock() {
@@ -392,11 +471,6 @@
       document.getElementById('detailsModal').style.display = 'none';
       currentSelectedTable = null;
     }
-
-    // Initialize timers and data polling
-    fetchDashboardData();
-    setInterval(fetchDashboardData, 10000); // Poll Apps Script backend every 10s
-    setInterval(updateTimers, 1000);        // Update countdown timers every 1s
   </script>
 </body>
 </html>
