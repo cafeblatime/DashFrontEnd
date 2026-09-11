@@ -9,12 +9,10 @@
       --bg-color: #1800ad;
       --card-open: #FAF9F6;
       --card-active: #2E7D32;     /* Green */
-      --card-expiring: #E65100;    /* Orange */
-      --card-expired: #D32F2F;     /* Red */
+      --card-expiring: #E65100;   /* Orange */
+      --card-expired: #D32F2F;    /* Red */
       --text-main: #1800ad;
       --text-muted: #5A6B82;
-      --accent-green: #2E7D32;
-      --accent-red: #D32F2F;
     }
 
     body {
@@ -27,7 +25,6 @@
 
     .dashboard-container {
       background: #FAF9F6;
-      border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 20px;
       padding: 24px 16px;
       max-width: 420px;
@@ -48,13 +45,7 @@
       text-transform: uppercase; 
     }
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      max-width: 380px;
-      margin: 0 auto;
-    }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; max-width: 380px; margin: 0 auto; }
 
     .table-card {
       background: #FFFFFF;
@@ -62,167 +53,62 @@
       padding: 14px 10px;
       text-align: center;
       border: 2px solid #E2E8F0;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-      transition: transform 0.1s ease, background 0.3s ease, box-shadow 0.2s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      transition: transform 0.1s ease, background 0.3s ease;
       position: relative;
     }
 
     .table-card.clickable { cursor: pointer; }
-    .table-card.clickable:hover {
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-      transform: translateY(-1px);
-    }
-    .table-card.clickable:active { transform: scale(0.96); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
+    .table-card.clickable:active { transform: scale(0.96); }
 
-    .table-card.state-open { background: #FFFFFF; border-color: #E2E8F0; opacity: 0.85; cursor: default; box-shadow: none; }
-    .table-card.state-active { background: var(--card-active); border-color: #246527; opacity: 1; color: #FFFFFF; box-shadow: 0 4px 10px rgba(46, 125, 50, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2); }
-    .table-card.state-expiring { background: var(--card-expiring); border-color: #b33f00; opacity: 1; color: #FFFFFF; box-shadow: 0 4px 10px rgba(230, 81, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2); }
-    .table-card.state-expired { background: var(--card-expired); border-color: #a82424; opacity: 1; color: #FFFFFF; box-shadow: 0 4px 10px rgba(211, 47, 47, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2); }
-
-    .table-card.state-active .table-num,
-    .table-card.state-expiring .table-num,
-    .table-card.state-expired .table-num { color: #FFFFFF; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+    .table-card.state-open { background: #FFFFFF; border-color: #E2E8F0; opacity: 0.85; cursor: default; }
+    .table-card.state-active { background: var(--card-active); color: #FFFFFF; border-color: #246527; }
+    .table-card.state-expiring { background: var(--card-expiring); color: #FFFFFF; border-color: #b33f00; }
+    .table-card.state-expired { background: var(--card-expired); color: #FFFFFF; border-color: #a82424; }
 
     .table-card.state-active .timer-display,
     .table-card.state-expiring .timer-display,
-    .table-card.state-expired .timer-display { color: #FFEB3B; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+    .table-card.state-expired .timer-display { color: #FFEB3B; }
 
-    .table-header {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .table-num { font-size: 1.1rem; font-weight: 800; color: var(--text-main); text-transform: uppercase; }
+    .table-header { display: flex; justify-content: center; align-items: center; gap: 6px; }
+    .table-num { font-size: 1.1rem; font-weight: 800; text-transform: uppercase; }
     
-    .bill-emoji {
-      font-size: 1rem;
-      transition: filter 0.3s ease, opacity 0.3s ease;
-    }
+    .bill-emoji { font-size: 1rem; transition: filter 0.3s ease, opacity 0.3s ease; }
     .bill-faded { opacity: 0.3; filter: grayscale(100%); }
     .bill-approved { opacity: 1; filter: drop-shadow(0 0 4px #2E7D32); }
     
-    .timer-display { 
-      font-size: 0.95rem; 
-      margin-top: 8px; 
-      color: var(--text-muted); 
-      font-weight: bold; 
-      font-family: monospace;
-    }
+    .timer-display { font-size: 0.95rem; margin-top: 8px; color: var(--text-muted); font-weight: bold; font-family: monospace; }
 
     .modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.75);
-      align-items: center; justify-content: center;
-      padding: 20px;
-      z-index: 1000;
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.75); align-items: center; justify-content: center; padding: 20px; z-index: 1000;
     }
 
     .modal-content {
-      background: #FAF9F6;
-      color: #1800ad;
-      padding: 24px;
-      border-radius: 16px;
-      max-width: 360px;
-      width: 100%;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      background: #FAF9F6; color: #1800ad; padding: 24px; border-radius: 16px; max-width: 360px; width: 100%;
     }
 
     .btn-action {
-      border: none;
-      padding: 12px 16px;
-      border-radius: 8px;
-      width: 100%;
-      margin-top: 12px;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 0.95rem;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+      border: none; padding: 12px 16px; border-radius: 8px; width: 100%; margin-top: 12px;
+      font-weight: bold; cursor: pointer; font-size: 0.95rem; transition: background 0.2s, transform 0.1s;
     }
-    .btn-action:active { transform: scale(0.98); }
+    .btn-pay { background: #E2E8F0; color: var(--text-muted); }
+    .btn-pay.approved { background: #2E7D32; color: #FFFFFF; }
+    .btn-close { background: #E2E8F0; color: #1800ad; }
 
-    .btn-pay { background: #E2E8F0; color: var(--text-muted); box-shadow: 0 2px 5px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.8); }
-    .btn-pay.approved { background: #2E7D32; color: #FFFFFF; box-shadow: 0 3px 6px rgba(46, 125, 50, 0.3), inset 0 1px 0 rgba(255,255,255,0.2); }
-    .btn-close { background: #E2E8F0; color: #1800ad; box-shadow: 0 2px 5px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.8); }
-
-    .verify-badge {
-      display: inline-block;
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      font-weight: bold;
-      margin-top: 8px;
-      text-align: center;
-      width: 100%;
-      box-sizing: border-box;
-    }
+    .verify-badge { display: inline-block; padding: 8px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; margin-top: 8px; text-align: center; width: 100%; box-sizing: border-box; }
     .verified { background: #2E7D32; color: #FFFFFF; }
     .unverified { background: #D32F2F; color: #FFFFFF; }
 
     #pinOverlay {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: var(--bg-color);
-      z-index: 2000;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-color); z-index: 2000;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
     }
-    .pin-box {
-      background: #FAF9F6;
-      padding: 30px;
-      border-radius: 16px;
-      text-align: center;
-      max-width: 300px;
-      width: 100%;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    }
-    .pin-input {
-      font-size: 1.8rem;
-      letter-spacing: 8px;
-      text-align: center;
-      width: 80%;
-      padding: 10px;
-      background: #FFFFFF;
-      border: 2px solid #E2E8F0;
-      color: #1800ad;
-      border-radius: 8px;
-      margin-bottom: 15px;
-    }
-    .pin-error {
-      color: #D32F2F;
-      font-size: 0.85rem;
-      margin-top: 8px;
-      display: none;
-    }
+    .pin-box { background: #FAF9F6; padding: 30px; border-radius: 16px; text-align: center; max-width: 300px; width: 100%; }
+    .pin-input { font-size: 1.8rem; letter-spacing: 8px; text-align: center; width: 80%; padding: 10px; background: #FFFFFF; border: 2px solid #E2E8F0; color: #1800ad; border-radius: 8px; margin-bottom: 15px; }
+    .pin-error { color: #D32F2F; font-size: 0.85rem; margin-top: 8px; display: none; }
 
-    .audio-settings {
-      display: none;
-      margin-top: 15px;
-      background: #FFFFFF;
-      padding: 10px;
-      border-radius: 10px;
-      border: 1px solid #E2E8F0;
-      font-size: 0.85rem;
-      text-align: left;
-      box-shadow: inset 0 1px 3px rgba(0,0,0,0.03);
-    }
-    .audio-settings label {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-weight: bold;
-      color: var(--text-main);
-    }
-    .audio-settings input[type="range"] {
-      width: 100%;
-      margin-top: 5px;
-    }
+    .audio-settings { display: none; margin-top: 15px; background: #FFFFFF; padding: 10px; border-radius: 10px; border: 1px solid #E2E8F0; font-size: 0.85rem; }
   </style>
 </head>
 <body>
@@ -242,11 +128,11 @@
     <div id="tableGrid" class="grid">Connecting...</div>
 
     <div class="audio-settings" id="audioSettingsPanel">
-      <label>
+      <label style="display:flex; justify-content:space-between; font-weight:bold;">
         <span>Alert Volume</span>
         <span id="volVal">35</span>
       </label>
-      <input type="range" id="volumeSlider" min="0" max="100" value="35" oninput="updateVolume(this.value)">
+      <input type="range" id="volumeSlider" min="0" max="100" value="35" style="width:100%; margin-top:5px;" oninput="updateVolume(this.value)">
       <button class="btn-action btn-pay" style="margin-top: 8px; padding: 6px;" onclick="playAlertSound()">Test Sound 🔊</button>
     </div>
   </div>
@@ -285,63 +171,45 @@
 
     function playAlertSound() {
       try {
-        if (!audioCtx) {
-          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (audioCtx.state === 'suspended') {
-          audioCtx.resume();
-        }
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
         
         const now = audioCtx.currentTime;
         [587.33, 880].forEach((freq, index) => {
           const osc = audioCtx.createOscillator();
           const gain = audioCtx.createGain();
-          
           osc.type = 'sine';
           osc.frequency.setValueAtTime(freq, now + (index * 0.1));
-          
           gain.gain.setValueAtTime(alertVolume, now + (index * 0.1));
           gain.gain.exponentialRampToValueAtTime(0.001, now + (index * 0.1) + 0.5);
-          
           osc.connect(gain);
           gain.connect(audioCtx.destination);
-          
           osc.start(now + (index * 0.1));
           osc.stop(now + (index * 0.1) + 0.5);
         });
-      } catch (e) {
-        console.warn("Audio playback prevented:", e);
-      }
+      } catch (e) { console.warn("Audio error:", e); }
     }
 
     window.addEventListener('DOMContentLoaded', () => {
       const pinInput = document.getElementById('pinInput');
       pinInput.focus();
-      pinInput.addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') verifyPin();
-      });
+      pinInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') verifyPin(); });
     });
 
     function verifyPin() {
-      const enteredPin = document.getElementById('pinInput').value;
-      const errorEl = document.getElementById('pinError');
-
-      if (enteredPin === MANAGER_PIN) {
+      if (document.getElementById('pinInput').value === MANAGER_PIN) {
         document.getElementById('pinOverlay').style.display = 'none';
-
-        if (!audioCtx) {
-          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         fetchDashboardData(); 
         pollInterval = setInterval(fetchDashboardData, 10000); 
       } else {
-        errorEl.style.display = 'block';
+        document.getElementById('pinError').style.display = 'block';
         document.getElementById('pinInput').value = '';
       }
     }
 
     async function fetchDashboardData() {
-      if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("YOUR_GOOGLE_APPS_SCRIPT")) return;
+      if (!APPS_SCRIPT_URL) return;
 
       try {
         const response = await fetch(`${APPS_SCRIPT_URL}?action=manager`);
@@ -351,18 +219,12 @@
           let hasNewActiveTable = false;
 
           Object.keys(result.tables).forEach(tNum => {
-            if (activeData[tNum] && activeData[tNum].isPaid !== undefined) {
-              result.tables[tNum].isPaid = activeData[tNum].isPaid;
-            } else {
-              result.tables[tNum].isPaid = false; 
-            }
-            
             result.tables[tNum].secondsLeft = parseEndTimeToSeconds(result.tables[tNum].endTime);
 
             const oldStatus = activeData[tNum] ? activeData[tNum].status.toLowerCase() : 'open';
             const newStatus = result.tables[tNum].status.toLowerCase();
             
-            if (oldStatus === 'open' && (newStatus === 'active' || newStatus === 'expiring' || result.tables[tNum].secondsLeft > 0)) {
+            if (oldStatus === 'open' && (newStatus === 'active' || newStatus === 'expiring')) {
               hasNewActiveTable = true;
             }
           });
@@ -371,14 +233,8 @@
           renderGrid();
 
           document.getElementById('audioSettingsPanel').style.display = 'block';
-
-          if (hasNewActiveTable) {
-            playAlertSound();
-          }
-          
-          if (currentSelectedTable && activeData[currentSelectedTable]) {
-            updateModalContent(currentSelectedTable);
-          }
+          if (hasNewActiveTable) playAlertSound();
+          if (currentSelectedTable && activeData[currentSelectedTable]) updateModalContent(currentSelectedTable);
         }
       } catch (err) {
         console.error("Failed to fetch live data:", err);
@@ -388,93 +244,49 @@
     function parseEndTimeToSeconds(rawEnd) {
       if (!rawEnd) return 0;
       const now = new Date();
-      
-      // Robustly handle ISO date strings or timestamps returned by Google Sheets/Apps Script
       let endDate = new Date(rawEnd);
-      if (!isNaN(endDate.getTime()) && (String(rawEnd).includes('T') || String(rawEnd).includes('-') || String(rawEnd).includes('/'))) {
-        const diffMs = endDate.getTime() - now.getTime();
-        return Math.floor(diffMs / 1000);
+      if (!isNaN(endDate.getTime())) {
+        return Math.floor((endDate.getTime() - now.getTime()) / 1000);
       }
-
-      // Fallback for standard time-only string formats (e.g., "14:30" or "2:30 PM")
-      const timeStr = String(rawEnd).trim();
-      const timeParts = timeStr.match(/(\d+):(\d+)(?::(\d+))?\s*(AM|PM)?/i);
-      if (!timeParts) return 0;
-
-      let hours = parseInt(timeParts[1], 10);
-      let minutes = parseInt(timeParts[2], 10);
-      let seconds = timeParts[3] ? parseInt(timeParts[3], 10) : 0;
-      let ampm = timeParts[4];
-
-      if (ampm) {
-        if (ampm.toUpperCase() === "PM" && hours < 12) hours += 12;
-        if (ampm.toUpperCase() === "AM" && hours === 12) hours = 0;
-      }
-
-      endDate = new Date(now);
-      endDate.setHours(hours, minutes, seconds, 0);
-
-      const diffMs = endDate.getTime() - now.getTime();
-      return Math.floor(diffMs / 1000);
+      return 0;
     }
 
     function renderGrid() {
       const grid = document.getElementById('tableGrid');
       grid.innerHTML = '';
-
       const sortedKeys = Object.keys(activeData).sort((a, b) => parseInt(a) - parseInt(b));
 
       sortedKeys.forEach(tNum => {
         const t = activeData[tNum];
         let statusLower = t.status.toLowerCase();
 
-        // Properly match table card colors according to state and remaining time
         if (statusLower !== 'open') {
-          if (t.secondsLeft <= 0) {
-            statusLower = 'expired';
-          } else if (t.secondsLeft <= 300) {
-            statusLower = 'expiring'; 
-          } else {
-            statusLower = 'active';
-          }
+          if (t.secondsLeft <= 0) statusLower = 'expired';
+          else if (t.secondsLeft <= 300) statusLower = 'expiring'; 
+          else statusLower = 'active';
         }
 
         const card = document.createElement('div');
         const isOpen = statusLower === 'open';
-        
         card.className = `table-card state-${statusLower}`;
 
-        if (isOpen) {
-          card.style.cursor = 'default';
-          card.onclick = null;
-        } else {
+        if (!isOpen) {
           card.className += ' clickable';
           card.onclick = () => openModal(tNum);
         }
 
         const isPaid = t.isPaid;
         const billClass = isPaid ? 'bill-approved' : 'bill-faded';
-        const showBillEmoji = !isOpen;
-
-        let timerText = "--:--";
-        if (isOpen) {
-          timerText = "Available";
-        } else if (t.secondsLeft <= 0) {
-          timerText = "00:00";
-        } else {
-          const mins = Math.floor(t.secondsLeft / 60);
-          const secs = t.secondsLeft % 60;
-          timerText = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
-        }
+        
+        let timerText = isOpen ? "Available" : (t.secondsLeft <= 0 ? "00:00" : `${Math.floor(t.secondsLeft/60).toString().padStart(2,'0')}:${(t.secondsLeft%60).toString().padStart(2,'0')}`);
 
         card.innerHTML = `
           <div class="table-header">
             <span class="table-num">Table ${t.table}</span>
-            ${showBillEmoji ? `<span class="bill-emoji ${billClass}">💵</span>` : ''}
+            ${!isOpen ? `<span class="bill-emoji ${billClass}">💵</span>` : ''}
           </div>
           <div class="timer-display" id="timer-${tNum}">${timerText}</div>
         `;
-
         grid.appendChild(card);
       });
     }
@@ -482,18 +294,11 @@
     setInterval(() => {
       Object.keys(activeData).forEach(tNum => {
         const t = activeData[tNum];
-        if (t.status.toLowerCase() !== 'open') {
+        if (t.status.toLowerCase() !== 'open' && t.secondsLeft > 0) {
           t.secondsLeft--;
-
           const timerEl = document.getElementById(`timer-${tNum}`);
           if (timerEl) {
-            if (t.secondsLeft <= 0) {
-              timerEl.innerText = "00:00";
-            } else {
-              const mins = Math.floor(t.secondsLeft / 60);
-              const secs = t.secondsLeft % 60;
-              timerEl.innerText = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
-            }
+            timerEl.innerText = `${Math.floor(t.secondsLeft/60).toString().padStart(2,'0')}:${(t.secondsLeft%60).toString().padStart(2,'0')}`;
           }
         }
       });
@@ -510,31 +315,18 @@
       if (!t) return;
 
       document.getElementById('modalTitle').innerText = `Table ${t.table} Details`;
-      
-      let displayOrders = [...t.orders];
-      if (t.intervalCount) {
-        displayOrders.push("Focus Pass (45 minutes)");
-      }
-
       const ordersList = document.getElementById('modalOrders');
-      ordersList.innerHTML = displayOrders.length > 0 
-        ? displayOrders.map(item => `<li>${item}</li>`).join('')
-        : '<li>No items recorded</li>';
-
+      ordersList.innerHTML = t.orders.length > 0 ? t.orders.map(item => `<li>${item}</li>`).join('') : '<li>No items recorded</li>';
       document.getElementById('modalTotal').innerText = t.totalSum.toFixed(2);
 
       const verifyEl = document.getElementById('modalVerify');
-      if (t.status.toLowerCase() === 'open') {
-        verifyEl.innerText = "Table is available";
-        verifyEl.className = "verify-badge unverified";
-      } else if (t.intervalCount) {
-        verifyEl.innerText = "Focus pass is verified";
+      if (t.intervalCount > 0) {
+        verifyEl.innerText = "Focus pass verified";
         verifyEl.className = "verify-badge verified";
       } else {
         verifyEl.innerText = "Focus pass not verified";
         verifyEl.className = "verify-badge unverified";
       }
-
       updateModalPaidBtn();
     }
 
@@ -543,14 +335,9 @@
       if (!currentSelectedTable || !activeData[currentSelectedTable]) return;
 
       const t = activeData[currentSelectedTable];
-      if (t.status.toLowerCase() === 'open') {
-        btn.style.display = 'none';
-        return;
-      }
-      btn.style.display = 'block';
+      btn.style.display = t.status.toLowerCase() === 'open' ? 'none' : 'block';
 
-      const isPaid = t.isPaid;
-      if (isPaid) {
+      if (t.isPaid) {
         btn.innerText = "✓ Paid & Approved";
         btn.className = "btn-action btn-pay approved";
       } else {
@@ -559,13 +346,21 @@
       }
     }
 
-    function togglePaymentStatus() {
+    async function togglePaymentStatus() {
       if (!currentSelectedTable || !activeData[currentSelectedTable]) return;
 
       const t = activeData[currentSelectedTable];
-      t.isPaid = !t.isPaid;
-      updateModalPaidBtn();
-      renderGrid();
+      try {
+        const res = await fetch(`${APPS_SCRIPT_URL}?action=togglePaid&table=${currentSelectedTable}`);
+        const data = await res.json();
+        if (data.status === "success") {
+          t.isPaid = data.isPaid;
+          updateModalPaidBtn();
+          renderGrid();
+        }
+      } catch (err) {
+        console.error("Failed to toggle payment status:", err);
+      }
     }
 
     function closeModal() {
