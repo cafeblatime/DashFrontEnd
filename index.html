@@ -242,14 +242,15 @@
     }
 
     function parseEndTimeToSeconds(rawEnd) {
-      if (!rawEnd) return 0;
-      const now = new Date();
-      let endDate = new Date(rawEnd);
-      if (!isNaN(endDate.getTime())) {
-        return Math.floor((endDate.getTime() - now.getTime()) / 1000);
-      }
-      return 0;
-    }
+  if (!rawEnd) return 0;
+  const now = Date.now();
+  const endMs = new Date(rawEnd).getTime();
+  
+  if (isNaN(endMs)) return 0;
+  
+  const diffSec = Math.floor((endMs - now) / 1000);
+  return diffSec > 0 ? diffSec : 0;
+}
 
     function renderGrid() {
       const grid = document.getElementById('tableGrid');
